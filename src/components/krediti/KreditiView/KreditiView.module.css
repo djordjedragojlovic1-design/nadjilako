@@ -1,0 +1,234 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+
+/* ─── Stanje ─── */
+.balanceCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: var(--space-xl);
+  border-radius: var(--radius-lg);
+  color: #fff;
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-primary-hover)
+  );
+  box-shadow: 0 8px 24px var(--color-shadow);
+}
+
+.balanceLabel {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.balanceValue {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+  font-size: clamp(2.25rem, 6vw, 3rem);
+  font-weight: 800;
+  line-height: 1;
+}
+
+.balanceUnit {
+  font-size: 1rem;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+.balanceHint {
+  margin-top: var(--space-xs);
+  font-size: 0.875rem;
+  opacity: 0.9;
+}
+
+/* ─── Sekcije ─── */
+.section {
+  padding: var(--space-xl);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-card);
+  box-shadow: 0 2px 8px var(--color-shadow);
+}
+
+.sectionTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.sectionSub {
+  margin-top: var(--space-xs);
+  margin-bottom: var(--space-lg);
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+/* ─── Paketi ─── */
+.paketi {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: var(--space-md);
+}
+
+.paket {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-lg) var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-elevated);
+  text-align: center;
+}
+
+.paketPopularno {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 1px var(--color-primary);
+}
+
+.paketBadge {
+  position: absolute;
+  top: -0.7rem;
+  padding: 0.15rem 0.6rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #fff;
+  background: var(--color-primary);
+}
+
+.paketKrediti {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--color-text);
+}
+
+.paketKreditiLabel {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+}
+
+.paketCijena {
+  margin-top: var(--space-xs);
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.kupiBtn {
+  width: 100%;
+  margin-top: var(--space-sm);
+  padding: 0.6rem var(--space-md);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  color: #fff;
+  background: var(--color-primary);
+  transition: background var(--transition-fast);
+}
+
+.kupiBtn:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.kupiBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ─── Istorija ─── */
+.lista {
+  display: flex;
+  flex-direction: column;
+}
+
+.stavka {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-md) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.stavka:last-child {
+  border-bottom: none;
+}
+
+.stavkaInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.stavkaOpis {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.stavkaDatum {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.stavkaIznosi {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.125rem;
+  white-space: nowrap;
+}
+
+.stavkaIznos {
+  font-size: 1.0625rem;
+  font-weight: 700;
+}
+
+.iznosPlus {
+  color: var(--color-success);
+}
+
+.iznosMinus {
+  color: var(--color-danger);
+}
+
+.stavkaSaldo {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.empty {
+  font-size: 0.9375rem;
+  color: var(--color-text-secondary);
+}
+
+/* ─── Poruke ─── */
+.alert {
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+}
+
+.alertError {
+  color: var(--color-danger);
+  background: color-mix(in srgb, var(--color-danger) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-danger) 35%, transparent);
+}
+
+.alertSuccess {
+  color: var(--color-success);
+  background: color-mix(in srgb, var(--color-success) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-success) 35%, transparent);
+}

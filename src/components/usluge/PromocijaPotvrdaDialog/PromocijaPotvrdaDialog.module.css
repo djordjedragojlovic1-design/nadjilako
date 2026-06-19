@@ -1,0 +1,117 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-md);
+  background: color-mix(in srgb, var(--color-text) 45%, transparent);
+}
+
+.dialog {
+  width: 100%;
+  max-width: 26rem;
+  padding: var(--space-xl);
+  border-radius: var(--radius-lg);
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 16px 48px var(--color-shadow);
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.lead {
+  margin-top: var(--space-sm);
+  font-size: 0.9375rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.breakdown {
+  margin-top: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-md);
+  font-size: 0.875rem;
+}
+
+.row dt {
+  color: var(--color-text-muted);
+}
+
+.row dd {
+  font-weight: 600;
+  color: var(--color-text);
+  text-align: right;
+}
+
+.rowTotal {
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--color-border);
+}
+
+.rowTotal dt,
+.rowTotal dd {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.greska {
+  margin-top: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  color: var(--color-danger);
+  background: color-mix(in srgb, var(--color-danger) 12%, transparent);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-sm);
+  margin-top: var(--space-lg);
+}
+
+.cancelBtn,
+.confirmBtn {
+  flex: 1;
+  padding: 0.65rem var(--space-md);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  transition: background var(--transition-fast);
+}
+
+.cancelBtn {
+  color: var(--color-text);
+  background: var(--color-bg-muted);
+}
+
+.cancelBtn:hover:not(:disabled) {
+  filter: brightness(0.97);
+}
+
+.confirmBtn {
+  color: #fff;
+  background: var(--color-primary);
+}
+
+.confirmBtn:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.cancelBtn:disabled,
+.confirmBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

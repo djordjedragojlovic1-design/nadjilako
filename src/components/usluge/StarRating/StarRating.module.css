@@ -1,0 +1,31 @@
+.wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.stars {
+  display: inline-flex;
+  gap: 0.125rem;
+}
+
+.star {
+  width: 1rem;
+  height: 1rem;
+  color: var(--color-border-strong);
+}
+
+.starFilled {
+  color: #f59e0b;
+}
+
+.count {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.countEmpty {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
