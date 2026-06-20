@@ -3,11 +3,18 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 import { PosaljiPorukuButton } from "@/components/chat/PosaljiPorukuButton";
 import { PratiociControl } from "@/components/profil/PratiociControl";
 import { StarRating } from "@/components/usluge/StarRating/StarRating";
 import { UslugaCard } from "@/components/usluge/UslugaCard/UslugaCard";
 import { formatDatum } from "@/lib/usluge/utils";
+import { buildMapsEmbedUrl } from "@/lib/lokacije/maps";
 import type { KorisnikReviewStats, UslugaListItem } from "@/lib/usluge/types";
 import type { KorisnikProfil } from "@/lib/korisnik/queries";
 import { cn } from "@/lib/utils";
@@ -35,6 +42,9 @@ export function ProfilView({
   brojPratilaca,
   viewerPrati,
 }: ProfilViewProps) {
+  const lokacija = korisnik.lokacija?.trim() || null;
+  const lokacijaEmbedUrl = lokacija ? buildMapsEmbedUrl(lokacija) : null;
+
   return (
     <>
       <Card className="shadow-sm">
@@ -137,24 +147,56 @@ export function ProfilView({
         </CardContent>
       </Card>
 
-      <section className="mt-12" aria-labelledby="usluge-korisnika">
-        <h2 id="usluge-korisnika" className="mb-6 text-xl font-bold">
-          {isOwner ? "Moje usluge" : "Objavljene usluge"}
-        </h2>
-        {usluge.length === 0 ? (
-          <p className="rounded-xl border border-dashed px-8 py-12 text-center text-muted-foreground">
-            {isOwner
-              ? "Još niste objavili nijednu uslugu. Kliknite „Objavi uslugu”."
-              : "Korisnik još nema objavljenih usluga."}
-          </p>
-        ) : (
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-6">
-            {usluge.map((usluga) => (
-              <UslugaCard key={usluga.id} usluga={usluga} isOwner={isOwner} />
-            ))}
-          </div>
+      <Tabs defaultValue="usluge" className="mt-12">
+        <TabsList>
+          <TabsTrigger value="usluge">
+            {isOwner ? "Moje usluge" : "Objavljene usluge"}
+          </TabsTrigger>
+          {lokacija && <TabsTrigger value="lokacija">Lokacija</TabsTrigger>}
+        </TabsList>
+
+        <TabsContent value="usluge" className="mt-6">
+          {usluge.length === 0 ? (
+            <p className="rounded-xl border border-dashed px-8 py-12 text-center text-muted-foreground">
+              {isOwner
+                ? "Još niste objavili nijednu uslugu. Kliknite „Objavi uslugu”."
+                : "Korisnik još nema objavljenih usluga."}
+            </p>
+          ) : (
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-6">
+              {usluge.map((usluga) => (
+                <UslugaCard key={usluga.id} usluga={usluga} isOwner={isOwner} />
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        {lokacija && (
+          <TabsContent value="lokacija" className="mt-6">
+            <div className="space-y-3">
+              {lokacijaEmbedUrl && (
+                <div className="overflow-hidden rounded-xl border">
+                  <iframe
+                    title="Lokacija"
+                    src={lokacijaEmbedUrl}
+                    className="h-[420px] w-full"
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                  />
+                </div>
+              )}
+              <a
+                href={lokacija}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+              >
+                Otvori lokaciju u Google Maps
+              </a>
+            </div>
+          </TabsContent>
         )}
-      </section>
+      </Tabs>
     </>
   );
 }

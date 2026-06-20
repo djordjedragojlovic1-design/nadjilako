@@ -1,5 +1,6 @@
 import { mapAuthError } from "@/lib/auth/messages";
 import { isDrzava } from "@/lib/auth/validation";
+import { isGoogleMapsUrl } from "@/lib/lokacije/maps";
 import { isValidBrojTelefona } from "@/lib/telefon/pozivni";
 import { compressImageFile } from "@/lib/usluge/compress-image";
 import { USLUGE_SLIKE_BUCKET } from "@/lib/usluge/constants";
@@ -11,6 +12,7 @@ export type UpdateProfilPayload = {
   korisnicko_ime: string;
   inf_o_korisniku: string;
   drzava: string;
+  lokacija: string;
   brojTelefona: string;
   trenutniBrojTelefona: string | null;
   avatarFile: File | null;
@@ -39,6 +41,9 @@ function validateProfil(payload: UpdateProfilPayload): string | null {
   }
   if (payload.brojTelefona && !isValidBrojTelefona(payload.brojTelefona)) {
     return "Unesite ispravan broj telefona (npr. 066 123 456).";
+  }
+  if (payload.lokacija.trim() && !isGoogleMapsUrl(payload.lokacija.trim())) {
+    return "Unesite ispravan Google Maps link za lokaciju.";
   }
   if (!payload.email.trim()) {
     return "Unesite email adresu.";
@@ -132,6 +137,7 @@ export async function updateProfilClient(
       korisnicko_ime: payload.korisnicko_ime.trim(),
       inf_o_korisniku: payload.inf_o_korisniku.trim() || null,
       drzava: payload.drzava,
+      lokacija: payload.lokacija.trim() || null,
       broj_telefona: noviBroj,
       // Promjena broja poništava prethodnu verifikaciju
       ...(brojPromijenjen ? { telefon_verifikovan: false } : {}),

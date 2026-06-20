@@ -44,6 +44,7 @@ export default async function UrediProfilPage() {
             drzava: korisnik.drzava,
             broj_telefona: korisnik.broj_telefona,
             profilna_slika: korisnik.profilna_slika,
+            lokacija: korisnik.lokacija ?? "",
             email: user.email ?? "",
             krediti: korisnik.krediti,
           }}

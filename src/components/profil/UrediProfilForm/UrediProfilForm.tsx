@@ -12,6 +12,7 @@ import { AppLink } from "@/components/ui/AppLink";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
@@ -19,6 +20,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { ObrisiNalogSection } from "@/components/profil/ObrisiNalogSection/ObrisiNalogSection";
 import { updateProfilClient } from "@/lib/korisnik/update-client";
+import { LokacijaPicker } from "@/components/profil/UrediProfilForm/LokacijaPicker";
+import {
+  buildMapsUrlFromCoords,
+  isGoogleMapsUrl,
+} from "@/lib/lokacije/maps";
 import {
   POZIVNI_BROJEVI,
   razdvojBrojTelefona,
@@ -35,6 +41,7 @@ export type UrediProfilInitial = {
   drzava: string;
   broj_telefona: string | null;
   profilna_slika: string | null;
+  lokacija: string;
   email: string;
   krediti: number;
 };
@@ -70,6 +77,12 @@ export function UrediProfilForm({
   const pocetniTelefon = razdvojBrojTelefona(initial.broj_telefona);
   const [pozivni, setPozivni] = useState(pocetniTelefon.kod);
   const [telefon, setTelefon] = useState(pocetniTelefon.lokalni);
+
+  const [imaRadnju, setImaRadnju] = useState(initial.lokacija.trim() !== "");
+  const [lokacija, setLokacija] = useState(initial.lokacija);
+  const lokacijaTrimmed = lokacija.trim();
+  const lokacijaValidna =
+    lokacijaTrimmed === "" || isGoogleMapsUrl(lokacijaTrimmed);
 
   const [avatarUrl, setAvatarUrl] = useState<string | null>(
     initial.profilna_slika,
@@ -124,6 +137,7 @@ export function UrediProfilForm({
       korisnicko_ime: String(fd.get("korisnicko_ime") ?? "").trim(),
       inf_o_korisniku: String(fd.get("inf_o_korisniku") ?? ""),
       drzava: String(fd.get("drzava") ?? ""),
+      lokacija: String(fd.get("lokacija") ?? ""),
       brojTelefona: sastaviBrojTelefona(
         String(fd.get("pozivni") ?? ""),
         String(fd.get("telefon") ?? ""),
@@ -271,6 +285,53 @@ export function UrediProfilForm({
           defaultValue={initial.inf_o_korisniku}
           placeholder="Nekoliko rečenica o vama i vašem radu..."
         />
+      </div>
+
+      <div className="space-y-2">
+        <Label className="flex items-center gap-2.5">
+          <Checkbox
+            checked={imaRadnju}
+            onCheckedChange={(checked) => setImaRadnju(checked === true)}
+          />
+          Imam radnju (prikaži lokaciju na profilu)
+        </Label>
+
+        {imaRadnju && (
+          <div className="space-y-2 pt-1">
+            <p className="text-muted-foreground text-sm">
+              Kliknite na mapu da označite lokaciju svoje radnje (možete je
+              pomjerati i prevlačiti oznaku). Lokacija će se prikazivati na
+              vašem profilu.
+            </p>
+            <LokacijaPicker
+              value={lokacija}
+              onPick={({ lat, lng }) =>
+                setLokacija(buildMapsUrlFromCoords(lat, lng))
+              }
+            />
+            <Input
+              id="lokacija"
+              name="lokacija"
+              type="url"
+              inputMode="url"
+              value={lokacija}
+              onChange={(e) => setLokacija(e.target.value)}
+              placeholder="ili nalijepite Google Maps link (https://maps.google.com/...)"
+              aria-invalid={!lokacijaValidna}
+            />
+            {!lokacijaValidna ? (
+              <p className="text-destructive text-sm">
+                Unesite ispravan Google Maps link (npr.
+                https://maps.app.goo.gl/...).
+              </p>
+            ) : (
+              <p className="text-muted-foreground text-sm">
+                Polje za link se popunjava automatski kad označite lokaciju na
+                mapi.
+              </p>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="space-y-2">

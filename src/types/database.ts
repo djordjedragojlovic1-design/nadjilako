@@ -20,6 +20,7 @@ export type Korisnik = {
   drzava: Drzava;
   broj_telefona: string | null;
   telefon_verifikovan: boolean;
+  lokacija: string | null;
   krediti: number;
   is_active: boolean;
   is_verified: boolean;
@@ -106,6 +107,7 @@ export type Database = {
           inf_o_korisniku?: string | null;
           broj_telefona?: string | null;
           telefon_verifikovan?: boolean;
+          lokacija?: string | null;
           krediti?: number;
           is_active?: boolean;
           is_verified?: boolean;
