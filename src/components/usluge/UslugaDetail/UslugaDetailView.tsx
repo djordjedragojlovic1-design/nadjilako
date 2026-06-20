@@ -209,25 +209,28 @@ export function UslugaDetailView({
         {usluga.pruzalac && (
           <Card>
             <CardContent className="flex flex-wrap items-center gap-4 pt-6">
-              <Avatar size="lg" className="bg-primary text-primary-foreground">
-                {usluga.pruzalac.profilna_slika ? (
-                  <AvatarImage src={usluga.pruzalac.profilna_slika} alt="" />
-                ) : null}
-                <AvatarFallback className="bg-primary font-bold text-primary-foreground">
-                  {getInitials(usluga.pruzalac.ime, usluga.pruzalac.prezime)}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <p className="font-semibold">
-                  {usluga.pruzalac.ime} {usluga.pruzalac.prezime}
-                </p>
-                <AppLink
-                  href={`/profil/${usluga.pruzalac.id}`}
-                  className="text-primary text-sm hover:underline"
-                >
-                  @{usluga.pruzalac.korisnicko_ime}
-                </AppLink>
-              </div>
+              <AppLink
+                href={`/profil/${usluga.pruzalac.id}`}
+                className="group flex items-center gap-4 rounded-lg"
+                aria-label={`Profil korisnika ${usluga.pruzalac.ime} ${usluga.pruzalac.prezime}`}
+              >
+                <Avatar size="lg" className="bg-primary text-primary-foreground">
+                  {usluga.pruzalac.profilna_slika ? (
+                    <AvatarImage src={usluga.pruzalac.profilna_slika} alt="" />
+                  ) : null}
+                  <AvatarFallback className="bg-primary font-bold text-primary-foreground">
+                    {getInitials(usluga.pruzalac.ime, usluga.pruzalac.prezime)}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="font-semibold group-hover:underline">
+                    {usluga.pruzalac.ime} {usluga.pruzalac.prezime}
+                  </p>
+                  <span className="text-primary text-sm group-hover:underline">
+                    @{usluga.pruzalac.korisnicko_ime}
+                  </span>
+                </div>
+              </AppLink>
               {!isOwner && (
                 <PosaljiPorukuButton
                   viewerId={viewerId}

@@ -133,17 +133,26 @@ function Odgovor({
 }) {
   return (
     <li className="flex gap-2">
-      <ReviewAvatar
-        slika={odgovor.ocjenjivac.profilna_slika}
-        ime={odgovor.ocjenjivac.ime}
-        prezime={odgovor.ocjenjivac.prezime}
-        size="sm"
-      />
+      <AppLink
+        href={`/profil/${odgovor.ocjenjivac.id}`}
+        className="shrink-0 rounded-full"
+        aria-label={`Profil korisnika ${odgovor.ocjenjivac.ime} ${odgovor.ocjenjivac.prezime}`}
+      >
+        <ReviewAvatar
+          slika={odgovor.ocjenjivac.profilna_slika}
+          ime={odgovor.ocjenjivac.ime}
+          prezime={odgovor.ocjenjivac.prezime}
+          size="sm"
+        />
+      </AppLink>
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm font-semibold">
+          <AppLink
+            href={`/profil/${odgovor.ocjenjivac.id}`}
+            className="text-sm font-semibold hover:underline"
+          >
             {odgovor.ocjenjivac.ime} {odgovor.ocjenjivac.prezime}
-          </span>
+          </AppLink>
           <span className="text-muted-foreground text-xs">{formatDatum(odgovor.created_at)}</span>
           {mojeId === odgovor.ocjenjivac.id && (
             <Button
@@ -265,17 +274,22 @@ export function RecenzijeSekcija({
                 <Card>
                   <CardContent className="pt-6">
                     <div className="mb-2 flex items-center gap-4">
-                      <ReviewAvatar
-                        slika={r.ocjenjivac.profilna_slika}
-                        ime={r.ocjenjivac.ime}
-                        prezime={r.ocjenjivac.prezime}
-                      />
-                      <div className="min-w-0 flex-1">
-                        <p className="text-[0.9375rem] font-semibold">
-                          {r.ocjenjivac.ime} {r.ocjenjivac.prezime}
-                        </p>
-                        <p className="text-muted-foreground text-xs">{formatDatum(r.created_at)}</p>
-                      </div>
+                      <AppLink
+                        href={`/profil/${r.ocjenjivac.id}`}
+                        className="group flex min-w-0 flex-1 items-center gap-4"
+                      >
+                        <ReviewAvatar
+                          slika={r.ocjenjivac.profilna_slika}
+                          ime={r.ocjenjivac.ime}
+                          prezime={r.ocjenjivac.prezime}
+                        />
+                        <div className="min-w-0">
+                          <p className="text-[0.9375rem] font-semibold group-hover:underline">
+                            {r.ocjenjivac.ime} {r.ocjenjivac.prezime}
+                          </p>
+                          <p className="text-muted-foreground text-xs">{formatDatum(r.created_at)}</p>
+                        </div>
+                      </AppLink>
                       <StarRating rating={r.ocjena} showCount={false} />
                     </div>
 

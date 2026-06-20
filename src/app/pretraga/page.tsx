@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { Search } from "lucide-react";
 import { PageCard, PageHeader, PageShell } from "@/components/layout/PageShell";
 import { AppLink } from "@/components/ui/AppLink";
 import { buttonVariants } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { PretragaFilteri } from "@/components/pretraga/PretragaFilteri/PretragaFilteri";
 import { PretragaSort } from "@/components/pretraga/PretragaSort/PretragaSort";
 import { UslugaCard } from "@/components/usluge/UslugaCard/UslugaCard";
@@ -140,6 +142,34 @@ export default async function PretragaPage({ searchParams }: PretragaPageProps) 
         title={naslovKategorije ?? "Rezultati pretrage"}
         subtitle={subtitle}
       />
+
+      <form action="/pretraga" className="relative mb-2 min-[901px]:hidden">
+        <Search
+          className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"
+          aria-hidden
+        />
+        <Input
+          type="search"
+          name="q"
+          defaultValue={q}
+          className="bg-muted rounded-full pl-9"
+          placeholder="Pretraži usluge..."
+          aria-label="Pretraga usluga"
+        />
+        {kategorija ? <input type="hidden" name="kategorija" value={kategorija} /> : null}
+        {drzava ? <input type="hidden" name="drzava" value={drzava} /> : null}
+        {grad ? <input type="hidden" name="grad" value={grad} /> : null}
+        {tip ? <input type="hidden" name="tip" value={tip} /> : null}
+        {tip && valuta ? <input type="hidden" name="valuta" value={valuta} /> : null}
+        {tip && cijenaMin != null ? (
+          <input type="hidden" name="cijena_min" value={cijenaMin} />
+        ) : null}
+        {tip && cijenaMax != null ? (
+          <input type="hidden" name="cijena_max" value={cijenaMax} />
+        ) : null}
+        {ocjena != null ? <input type="hidden" name="ocjena" value={ocjena} /> : null}
+        {sort !== DEFAULT_SORT ? <input type="hidden" name="sort" value={sort} /> : null}
+      </form>
 
       {error ? (
         <PageCard>

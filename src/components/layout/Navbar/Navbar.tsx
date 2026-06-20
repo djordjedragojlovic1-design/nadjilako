@@ -363,7 +363,6 @@ export function Navbar() {
               linkClassName="justify-start px-3 py-2.5 text-base"
               onNavigate={closeMobile}
             />
-            <SearchField onSubmit={closeMobile} />
             {!loading && !isLoggedIn && (
               <div className="flex flex-col gap-2 border-t pt-4">
                 <AppLink

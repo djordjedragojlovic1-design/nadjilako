@@ -30,7 +30,7 @@ const themeInitScript = `
 (function() {
   try {
     var t = localStorage.getItem('nadjilako-theme');
-    var dark = t === 'dark' || (t !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    var dark = t === 'dark';
     document.documentElement.classList.toggle('dark', dark);
   } catch (e) {}
 })();
