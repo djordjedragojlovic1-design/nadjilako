@@ -1,16 +1,17 @@
 import type { Metadata } from "next";
+import { PageCard, PageHeader, PageShell } from "@/components/layout/PageShell";
 import { AppLink } from "@/components/ui/AppLink";
+import { buttonVariants } from "@/components/ui/button";
 import { PretragaFilteri } from "@/components/pretraga/PretragaFilteri/PretragaFilteri";
 import { PretragaSort } from "@/components/pretraga/PretragaSort/PretragaSort";
 import { UslugaCard } from "@/components/usluge/UslugaCard/UslugaCard";
+import { cn } from "@/lib/utils";
 import { DEFAULT_SORT, DEFAULT_VALUTA, isSortKey } from "@/lib/usluge/constants";
 import { searchUsluge } from "@/lib/usluge/queries";
 import type {
   PretragaFilteriValues,
   PretragaRezultat,
 } from "@/lib/usluge/types";
-import pageStyles from "@/styles/page.module.css";
-import styles from "./Pretraga.module.css";
 
 export const metadata: Metadata = {
   title: "Pretraga",
@@ -133,51 +134,63 @@ export default async function PretragaPage({ searchParams }: PretragaPageProps) 
   };
 
   return (
-    <div className={pageStyles.page}>
-      <header className={pageStyles.header}>
-        <span className={pageStyles.eyebrow}>Pretraga</span>
-        <h1 className={pageStyles.title}>
-          {naslovKategorije ?? "Rezultati pretrage"}
-        </h1>
-        <p className={pageStyles.subtitle}>{subtitle}</p>
-      </header>
+    <PageShell>
+      <PageHeader
+        eyebrow="Pretraga"
+        title={naslovKategorije ?? "Rezultati pretrage"}
+        subtitle={subtitle}
+      />
 
       {error ? (
-        <section className={pageStyles.card}>
+        <PageCard>
           <p>Nije moguće učitati rezultate: {error}</p>
-        </section>
+        </PageCard>
       ) : rezultat ? (
-        <div className={styles.layout}>
-          <aside className={styles.sidebar}>
+        <div className="grid grid-cols-1 items-start gap-4 min-[881px]:grid-cols-[16rem_1fr] min-[881px]:gap-8">
+          <aside className="min-[881px]:sticky min-[881px]:top-[calc(var(--navbar-height)+1rem)]">
             <PretragaFilteri filteri={filteriValues} facets={rezultat.facets} />
           </aside>
 
-          <div className={styles.results}>
-            <div className={styles.toolbar}>
-              <p className={styles.count}>{brojLabela(rezultat.total)}</p>
+          <div className="min-w-0">
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+              <p className="text-muted-foreground text-[0.9375rem]">
+                {brojLabela(rezultat.total)}
+              </p>
               <PretragaSort value={sort} />
             </div>
 
             {rezultat.items.length === 0 ? (
-              <section className={styles.empty}>
+              <section className="text-muted-foreground rounded-xl border border-dashed p-12 text-center">
                 <p>Nema usluga koje odgovaraju zadatim kriterijima.</p>
-                <p className={styles.emptyCta}>
-                  <AppLink href="/objavi-uslugu">Objavi uslugu</AppLink>
+                <p className="mt-4">
+                  <AppLink
+                    href="/objavi-uslugu"
+                    className="text-primary font-semibold"
+                  >
+                    Objavi uslugu
+                  </AppLink>
                 </p>
               </section>
             ) : (
               <>
-                <div className={styles.grid}>
+                <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4">
                   {rezultat.items.map((usluga) => (
                     <UslugaCard key={usluga.id} usluga={usluga} />
                   ))}
                 </div>
 
                 {rezultat.totalPages > 1 && (
-                  <nav className={styles.pagination} aria-label="Stranice rezultata">
+                  <nav
+                    className="mt-8 flex flex-wrap items-center justify-center gap-1"
+                    aria-label="Stranice rezultata"
+                  >
                     <AppLink
                       href={buildHref(rezultat.page - 1)}
-                      className={`${styles.pageLink} ${rezultat.page <= 1 ? styles.pageDisabled : ""}`}
+                      className={cn(
+                        buttonVariants({ variant: "outline" }),
+                        "size-10 min-w-10 px-3",
+                        rezultat.page <= 1 && "pointer-events-none opacity-45",
+                      )}
                       aria-label="Prethodna stranica"
                       aria-disabled={rezultat.page <= 1}
                     >
@@ -186,14 +199,22 @@ export default async function PretragaPage({ searchParams }: PretragaPageProps) 
 
                     {pageNumbers(rezultat.page, rezultat.totalPages).map((p, i) =>
                       p === "..." ? (
-                        <span key={`e-${i}`} className={styles.ellipsis}>
+                        <span
+                          key={`e-${i}`}
+                          className="text-muted-foreground inline-flex h-10 min-w-8 items-center justify-center"
+                        >
                           …
                         </span>
                       ) : (
                         <AppLink
                           key={p}
                           href={buildHref(p)}
-                          className={`${styles.pageLink} ${p === rezultat.page ? styles.pageActive : ""}`}
+                          className={cn(
+                            buttonVariants({ variant: "outline" }),
+                            "size-10 min-w-10 px-3",
+                            p === rezultat.page &&
+                              "border-primary bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground",
+                          )}
                           aria-current={p === rezultat.page ? "page" : undefined}
                         >
                           {p}
@@ -203,7 +224,12 @@ export default async function PretragaPage({ searchParams }: PretragaPageProps) 
 
                     <AppLink
                       href={buildHref(rezultat.page + 1)}
-                      className={`${styles.pageLink} ${rezultat.page >= rezultat.totalPages ? styles.pageDisabled : ""}`}
+                      className={cn(
+                        buttonVariants({ variant: "outline" }),
+                        "size-10 min-w-10 px-3",
+                        rezultat.page >= rezultat.totalPages &&
+                          "pointer-events-none opacity-45",
+                      )}
                       aria-label="Sljedeća stranica"
                       aria-disabled={rezultat.page >= rezultat.totalPages}
                     >
@@ -216,6 +242,6 @@ export default async function PretragaPage({ searchParams }: PretragaPageProps) 
           </div>
         </div>
       ) : null}
-    </div>
+    </PageShell>
   );
 }

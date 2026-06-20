@@ -11,6 +11,11 @@ import {
 } from "react";
 import { MjestaRadaPicker } from "@/components/lokacije/MjestaRadaPicker/MjestaRadaPicker";
 import { AppLink } from "@/components/ui/AppLink";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { promovisiUsluguClient } from "@/lib/krediti/client";
 import {
@@ -33,9 +38,10 @@ import { updateUslugaClient } from "@/lib/usluge/update-client";
 import type { UslugaSlika } from "@/lib/usluge/types";
 import { validateUslugaSlike } from "@/lib/usluge/upload-slike";
 import type { Drzava } from "@/types/database";
-import authStyles from "@/components/auth/auth.module.css";
 import { KategorijaIdSelect } from "./KategorijaIdSelect";
-import styles from "./ObjaviUsluguForm.module.css";
+
+const selectClassName =
+  "h-8 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30";
 
 type Kategorija = { id: number; naziv: string; parentNaziv?: string | null };
 
@@ -43,9 +49,9 @@ export type UslugaFormInitial = {
   naziv: string;
   informacije: string;
   status: string;
-  cijena: number;
+  cijena: number | null;
   tip_cijene: string;
-  valuta: string;
+  valuta: string | null;
   kategorija_id: number | null;
   drzave: Drzava[];
   gradovi: string[];
@@ -161,7 +167,8 @@ export function UslugaForm({
       : cijenaRaw === ""
         ? null
         : Number(cijenaRaw);
-    const valuta = jeDogovor ? null : String(fd.get("valuta") ?? "BAM");
+    const valutaRaw = String(fd.get("valuta") ?? "").trim();
+    const valuta = jeDogovor ? null : valutaRaw === "" ? null : valutaRaw;
 
     const common = {
       naziv: String(fd.get("naziv") ?? ""),
@@ -193,9 +200,6 @@ export function UslugaForm({
     }
 
     if (result.uslugaId) {
-      // Promocija se aktivira samo pri kreiranju i tek nakon što usluga postoji.
-      // Eventualnu grešku (npr. nedovoljno kredita) ne tretiramo kao fatalnu —
-      // korisnik može promovisati kasnije sa stranice usluge.
       if (mode === "create" && promoTip) {
         await promovisiUsluguClient(result.uslugaId, promoTip);
         await refreshProfile();
@@ -220,43 +224,32 @@ export function UslugaForm({
   const isBusy = pending || compressing;
 
   return (
-    <form className={authStyles.form} onSubmit={handleSubmit}>
+    <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
       {error && (
-        <p className={`${authStyles.alert} ${authStyles.alertError}`} role="alert">
-          {error}
-        </p>
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
 
-      <div className={authStyles.field}>
-        <label className={authStyles.label} htmlFor="naziv">
-          Naziv usluge *
-        </label>
-        <input
-          id="naziv"
-          name="naziv"
-          required
-          className={authStyles.input}
-          defaultValue={initial?.naziv}
-        />
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="naziv">Naziv usluge *</Label>
+        <Input id="naziv" name="naziv" required defaultValue={initial?.naziv} />
       </div>
 
-      <div className={authStyles.field}>
-        <label className={authStyles.label} htmlFor="informacije">
-          Informacije *
-        </label>
-        <textarea
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="informacije">Informacije *</Label>
+        <Textarea
           id="informacije"
           name="informacije"
           required
           rows={5}
-          className={authStyles.input}
           defaultValue={initial?.informacije}
         />
       </div>
 
       {kategorije.length > 0 && (
-        <div className={authStyles.field}>
-          <span className={authStyles.label}>Kategorija</span>
+        <div className="flex flex-col gap-1.5">
+          <Label>Kategorija</Label>
           <KategorijaIdSelect
             kategorije={kategorije}
             value={kategorijaId}
@@ -265,8 +258,8 @@ export function UslugaForm({
         </div>
       )}
 
-      <div className={authStyles.field}>
-        <label className={authStyles.label}>Mjesta rada *</label>
+      <div className="flex flex-col gap-1.5">
+        <Label>Mjesta rada *</Label>
         <MjestaRadaPicker
           drzave={drzave}
           gradovi={gradovi}
@@ -275,14 +268,12 @@ export function UslugaForm({
         />
       </div>
 
-      <div className={authStyles.field}>
-        <label className={authStyles.label} htmlFor="status">
-          Status
-        </label>
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="status">Status</Label>
         <select
           id="status"
           name="status"
-          className={authStyles.select}
+          className={selectClassName}
           defaultValue={initial?.status ?? "aktivno"}
         >
           {STATUS_OPTIONS.map((s) => (
@@ -293,15 +284,13 @@ export function UslugaForm({
         </select>
       </div>
 
-      <div className={authStyles.field}>
-        <label className={authStyles.label} htmlFor="tip_cijene">
-          Tip cijene *
-        </label>
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="tip_cijene">Tip cijene *</Label>
         <select
           id="tip_cijene"
           name="tip_cijene"
           required
-          className={authStyles.select}
+          className={selectClassName}
           value={tipCijene}
           onChange={(e) => setTipCijene(e.target.value)}
         >
@@ -318,33 +307,27 @@ export function UslugaForm({
 
       {!jeDogovor && (
         <>
-          <div className={authStyles.field}>
-            <label className={authStyles.label} htmlFor="cijena">
-              Cijena *
-            </label>
-            <input
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="cijena">Cijena</Label>
+            <Input
               id="cijena"
               name="cijena"
               type="number"
               min={0}
               step="0.01"
-              required
-              className={authStyles.input}
-              defaultValue={initial?.cijena}
+              defaultValue={initial?.cijena ?? undefined}
             />
           </div>
 
-          <div className={authStyles.field}>
-            <label className={authStyles.label} htmlFor="valuta">
-              Valuta *
-            </label>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="valuta">Valuta</Label>
             <select
               id="valuta"
               name="valuta"
-              required
-              className={authStyles.select}
-              defaultValue={initial?.valuta ?? "BAM"}
+              className={selectClassName}
+              defaultValue={initial?.valuta ?? ""}
             >
+              <option value="">—</option>
               {VALUTA_OPTIONS.map((v) => (
                 <option key={v} value={v}>
                   {VALUTA_LABELS[v]}
@@ -356,20 +339,18 @@ export function UslugaForm({
       )}
 
       {jeDogovor && (
-        <p className={styles.hint}>
+        <p className="text-muted-foreground text-[0.8125rem]">
           Cijena se dogovara — polja za cijenu i valutu nisu obavezna.
         </p>
       )}
 
       {mode === "create" && (
-        <div className={authStyles.field}>
-          <label className={authStyles.label} htmlFor="promocija">
-            Promocija (opcionalno)
-          </label>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="promocija">Promocija (opcionalno)</Label>
           <select
             id="promocija"
             name="promocija"
-            className={authStyles.select}
+            className={selectClassName}
             value={promoTip}
             onChange={(e) => setPromoTip(e.target.value as PromoTip | "")}
           >
@@ -380,13 +361,16 @@ export function UslugaForm({
               </option>
             ))}
           </select>
-          <p className={styles.hint}>
+          <p className="text-muted-foreground text-[0.8125rem]">
             Imate {krediti} kredita.{" "}
             {promoTip && krediti < PROMO_CIJENE[promoTip] ? (
               <>
                 Nedovoljno za izabranu promociju — biće preskočena. Možete je
                 aktivirati kasnije sa stranice usluge ili{" "}
-                <AppLink href="/krediti">dopuniti kredite</AppLink>.
+                <AppLink href="/krediti" className="text-primary font-semibold hover:underline">
+                  dopuniti kredite
+                </AppLink>
+                .
               </>
             ) : (
               <>Promociju možete kasnije promijeniti na stranici usluge.</>
@@ -395,11 +379,9 @@ export function UslugaForm({
         </div>
       )}
 
-      <div className={authStyles.field}>
-        <span className={authStyles.label} id="slike-label">
-          Slike usluge
-        </span>
-        <div className={styles.filePicker} role="group" aria-labelledby="slike-label">
+      <div className="flex flex-col gap-1.5">
+        <Label id="slike-label">Slike usluge</Label>
+        <div className="flex flex-wrap items-center gap-4" role="group" aria-labelledby="slike-label">
           <input
             ref={fileInputRef}
             id="slike"
@@ -407,39 +389,43 @@ export function UslugaForm({
             type="file"
             accept="image/*"
             multiple
-            className={styles.hiddenInput}
+            className="sr-only"
             onChange={handleSlikeChange}
             disabled={!canAddSlike}
             tabIndex={-1}
           />
-          <button
+          <Button
             type="button"
-            className={styles.pickBtn}
+            variant="outline"
+            className="text-primary border-primary hover:bg-primary hover:text-primary-foreground"
             onClick={() => fileInputRef.current?.click()}
             disabled={!canAddSlike}
           >
             {compressing ? "Obrada slika..." : "Izaberi slike"}
-          </button>
-          <span className={styles.fileStatus}>{slikeStatusText(ukupnoSlike)}</span>
+          </Button>
+          <span className="text-muted-foreground text-sm">{slikeStatusText(ukupnoSlike)}</span>
         </div>
-        <p className={styles.hint}>
+        <p className="text-muted-foreground text-[0.8125rem]">
           Do {SLIKE_MAX_COUNT} slika. Sajt automatski smanjuje slike na najviše 2 MB.
         </p>
         {(postojeceSlike.length > 0 || novePreview.length > 0) && (
-          <div className={styles.previewGrid}>
+          <div className="mt-2 flex flex-wrap gap-2">
             {postojeceSlike.map((slika) => (
-              <div key={`existing-${slika.id}`} className={styles.previewItem}>
+              <div
+                key={`existing-${slika.id}`}
+                className="relative size-[5.5rem] overflow-hidden rounded-lg border bg-muted"
+              >
                 <Image
                   src={slika.url}
                   alt="Postojeća slika"
                   width={88}
                   height={88}
                   unoptimized
-                  className={styles.previewImg}
+                  className="size-full object-cover"
                 />
                 <button
                   type="button"
-                  className={styles.removeBtn}
+                  className="absolute top-1 right-1 flex size-6 cursor-pointer items-center justify-center rounded-full border-none bg-black/55 text-base leading-none text-white"
                   onClick={() => removePostojecaSlika(slika)}
                   disabled={isBusy}
                   aria-label="Ukloni postojeću sliku"
@@ -449,18 +435,18 @@ export function UslugaForm({
               </div>
             ))}
             {novePreview.map((url, index) => (
-              <div key={url} className={styles.previewItem}>
+              <div key={url} className="relative size-[5.5rem] overflow-hidden rounded-lg border bg-muted">
                 <Image
                   src={url}
                   alt={`Pregled nove slike ${index + 1}`}
                   width={88}
                   height={88}
                   unoptimized
-                  className={styles.previewImg}
+                  className="size-full object-cover"
                 />
                 <button
                   type="button"
-                  className={styles.removeBtn}
+                  className="absolute top-1 right-1 flex size-6 cursor-pointer items-center justify-center rounded-full border-none bg-black/55 text-base leading-none text-white"
                   onClick={() => removeNovaSlika(index)}
                   disabled={isBusy}
                   aria-label={`Ukloni novu sliku ${index + 1}`}
@@ -473,7 +459,7 @@ export function UslugaForm({
         )}
       </div>
 
-      <button type="submit" className={authStyles.submit} disabled={isBusy}>
+      <Button type="submit" size="lg" className="w-full" disabled={isBusy}>
         {pending
           ? mode === "create"
             ? "Objavljivanje..."
@@ -481,16 +467,20 @@ export function UslugaForm({
           : mode === "create"
             ? "Objavi uslugu"
             : "Sačuvaj izmjene"}
-      </button>
+      </Button>
 
-      <p className={authStyles.footer}>
+      <p className="text-muted-foreground text-center text-sm">
         {mode === "edit" && uslugaId ? (
           <>
-            <AppLink href={`/usluga/${uslugaId}`}>Nazad na uslugu</AppLink>
+            <AppLink href={`/usluga/${uslugaId}`} className="text-primary hover:underline">
+              Nazad na uslugu
+            </AppLink>
             {" · "}
           </>
         ) : null}
-        <AppLink href={`/profil/${korisnikId}`}>Nazad na profil</AppLink>
+        <AppLink href={`/profil/${korisnikId}`} className="text-primary hover:underline">
+          Nazad na profil
+        </AppLink>
       </p>
     </form>
   );

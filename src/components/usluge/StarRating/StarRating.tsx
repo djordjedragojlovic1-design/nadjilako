@@ -1,4 +1,4 @@
-import styles from "./StarRating.module.css";
+import { cn } from "@/lib/utils";
 
 type StarRatingProps = {
   rating: number;
@@ -10,7 +10,7 @@ type StarRatingProps = {
 function Star({ filled }: { filled: boolean }) {
   return (
     <svg
-      className={`${styles.star} ${filled ? styles.starFilled : ""}`}
+      className={cn("size-4", filled ? "text-amber-500" : "text-border")}
       viewBox="0 0 24 24"
       aria-hidden
     >
@@ -33,19 +33,19 @@ export function StarRating({
   const hasHalf = rounded - fullStars >= 0.5;
 
   return (
-    <div className={styles.wrap} aria-label={`Ocjena ${rating} od 5`}>
-      <span className={styles.stars}>
+    <div className="inline-flex items-center gap-1.5" aria-label={`Ocjena ${rating} od 5`}>
+      <span className="inline-flex gap-0.5">
         {Array.from({ length: 5 }, (_, i) => (
           <Star key={i} filled={i < fullStars || (i === fullStars && hasHalf)} />
         ))}
       </span>
       {showCount &&
         (reviewCount > 0 ? (
-          <span className={styles.count}>
+          <span className="text-[0.8125rem] whitespace-nowrap text-muted-foreground">
             {rating > 0 ? rating.toFixed(1) : "—"} ({reviewCount})
           </span>
         ) : (
-          <span className={styles.countEmpty}>Nema ocjena</span>
+          <span className="text-[0.8125rem] text-muted-foreground">Nema ocjena</span>
         ))}
     </div>
   );

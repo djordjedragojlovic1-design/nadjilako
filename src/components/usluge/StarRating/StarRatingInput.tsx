@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import styles from "./StarRatingInput.module.css";
+import { cn } from "@/lib/utils";
 
 type StarRatingInputProps = {
   value: number;
@@ -14,7 +14,7 @@ const OZNAKE = ["Loše", "Slabo", "Dobro", "Vrlo dobro", "Odlično"];
 function Star({ filled }: { filled: boolean }) {
   return (
     <svg
-      className={`${styles.star} ${filled ? styles.starFilled : ""}`}
+      className={cn("size-7", filled ? "text-amber-500" : "text-inherit")}
       viewBox="0 0 24 24"
       aria-hidden
     >
@@ -35,9 +35,9 @@ export function StarRatingInput({
   const prikazana = hover || value;
 
   return (
-    <div className={styles.wrap}>
+    <div className="flex items-center gap-4">
       <div
-        className={styles.stars}
+        className="inline-flex gap-0.5"
         role="radiogroup"
         aria-label="Ocjena"
         onMouseLeave={() => setHover(0)}
@@ -49,7 +49,7 @@ export function StarRatingInput({
             role="radio"
             aria-checked={value === n}
             aria-label={`${n} ${n === 1 ? "zvjezdica" : "zvjezdice"}`}
-            className={styles.starBtn}
+            className="inline-flex border-none bg-transparent p-0.5 text-border transition-transform hover:scale-110 disabled:cursor-not-allowed"
             disabled={disabled}
             onClick={() => onChange(n)}
             onMouseEnter={() => setHover(n)}
@@ -58,7 +58,7 @@ export function StarRatingInput({
           </button>
         ))}
       </div>
-      <span className={styles.label}>
+      <span className="text-sm font-medium text-muted-foreground">
         {prikazana > 0 ? OZNAKE[prikazana - 1] : "Izaberite ocjenu"}
       </span>
     </div>

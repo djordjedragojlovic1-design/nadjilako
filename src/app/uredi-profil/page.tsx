@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { PageCard, PageHeader, PageShell } from "@/components/layout/PageShell";
 import { UrediProfilForm } from "@/components/profil/UrediProfilForm/UrediProfilForm";
 import { fetchKorisnikByUserUuid } from "@/lib/korisnik/queries";
 import { createClient } from "@/lib/supabase/server";
-import styles from "@/styles/page.module.css";
 
 export const metadata: Metadata = {
   title: "Uredi profil",
@@ -25,16 +25,14 @@ export default async function UrediProfilPage() {
   }
 
   return (
-    <div className={styles.page}>
-      <header className={styles.header}>
-        <span className={styles.eyebrow}>Nalog</span>
-        <h1 className={styles.title}>Uredi profil</h1>
-        <p className={styles.subtitle}>
-          Izmijenite svoje podatke, profilnu sliku, email i lozinku.
-        </p>
-      </header>
+    <PageShell>
+      <PageHeader
+        eyebrow="Nalog"
+        title="Uredi profil"
+        subtitle="Izmijenite svoje podatke, profilnu sliku, email i lozinku."
+      />
 
-      <section className={`${styles.card} ${styles.cardWide}`}>
+      <PageCard wide>
         <UrediProfilForm
           korisnikId={korisnik.id}
           userUuid={korisnik.user_uuid}
@@ -50,7 +48,7 @@ export default async function UrediProfilPage() {
             krediti: korisnik.krediti,
           }}
         />
-      </section>
-    </div>
+      </PageCard>
+    </PageShell>
   );
 }

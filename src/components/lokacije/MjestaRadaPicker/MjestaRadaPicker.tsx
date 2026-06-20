@@ -1,14 +1,19 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { SearchIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
-  DRZAVE,
-  GRADOVI_PO_DRZAVI,
-  gradoviZaDrzave,
-  gradoviZaDrzavu,
-} from "@/lib/lokacije/gradovi";
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/components/ui/input-group";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
+import { DRZAVE, gradoviZaDrzave, gradoviZaDrzavu } from "@/lib/lokacije/gradovi";
 import type { Drzava } from "@/types/database";
-import styles from "./MjestaRadaPicker.module.css";
 
 const MAX_VISIBLE = 8;
 
@@ -50,6 +55,28 @@ type CityGroupProps = {
   onGradoviChange: (gradovi: string[]) => void;
 };
 
+function CheckboxTile({
+  checked,
+  onCheckedChange,
+  children,
+}: {
+  checked: boolean;
+  onCheckedChange: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <Label
+      className={cn(
+        "hover:border-primary flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm font-normal transition-colors",
+        checked && "border-primary bg-primary/10",
+      )}
+    >
+      <Checkbox checked={checked} onCheckedChange={onCheckedChange} />
+      {children}
+    </Label>
+  );
+}
+
 function CityGroup({ drzava, gradovi, onGradoviChange }: CityGroupProps) {
   const [search, setSearch] = useState("");
   const [expanded, setExpanded] = useState(false);
@@ -60,8 +87,7 @@ function CityGroup({ drzava, gradovi, onGradoviChange }: CityGroupProps) {
 
   const filteredCount = filterGradovi(cityList, search).length;
   const visibleGradovi = getVisibleGradovi(cityList, gradovi, expanded, search);
-  const hasMore =
-    !search.trim() && !expanded && cityList.length > MAX_VISIBLE;
+  const hasMore = !search.trim() && !expanded && cityList.length > MAX_VISIBLE;
 
   const toggleGrad = (grad: string) => {
     if (gradovi.includes(grad)) {
@@ -82,82 +108,83 @@ function CityGroup({ drzava, gradovi, onGradoviChange }: CityGroupProps) {
   };
 
   return (
-    <div className={styles.cityGroup}>
-      <div className={styles.cityGroupHeader}>
-        <p className={styles.cityGroupTitle}>
-          {drzava}{" "}
-          <span className={styles.count}>
-            ({selectedCount}/{cityList.length})
-          </span>
-        </p>
-        <button
-          type="button"
-          className={styles.selectAllBtn}
-          onClick={toggleSviGradovi}
-        >
-          {allSelected ? "Poništi sve" : "Svi gradovi"}
-        </button>
-      </div>
-
-      <div className={styles.searchWrap}>
-        <svg className={styles.searchIcon} viewBox="0 0 24 24" fill="none" aria-hidden>
-          <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
-          <path d="M20 20l-3-3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-        </svg>
-        <input
-          type="search"
-          className={styles.searchInput}
-          placeholder={`Pretraži gradove — ${drzava}`}
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setExpanded(false);
-          }}
-          aria-label={`Pretraga gradova u ${drzava}`}
-        />
-      </div>
-
-      {search.trim() && filteredCount === 0 ? (
-        <p className={styles.noResults}>Nema rezultata za „{search.trim()}”.</p>
-      ) : (
-        <div className={styles.checkboxGrid}>
-          {visibleGradovi.map((grad) => (
-            <label
-              key={grad}
-              className={`${styles.checkLabel} ${gradovi.includes(grad) ? styles.checkLabelActive : ""}`}
-            >
-              <input
-                type="checkbox"
-                className={styles.checkInput}
-                checked={gradovi.includes(grad)}
-                onChange={() => toggleGrad(grad)}
-              />
-              {grad}
-            </label>
-          ))}
+    <Card className="bg-muted/50 py-4">
+      <CardContent className="flex flex-col gap-0 px-4">
+        <div className="flex items-center justify-between gap-4">
+          <p className="text-sm font-semibold">
+            {drzava}{" "}
+            <span className="text-muted-foreground font-normal">
+              ({selectedCount}/{cityList.length})
+            </span>
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            size="xs"
+            className="rounded-full"
+            onClick={toggleSviGradovi}
+          >
+            {allSelected ? "Poništi sve" : "Svi gradovi"}
+          </Button>
         </div>
-      )}
 
-      {hasMore && (
-        <button
-          type="button"
-          className={styles.showMoreBtn}
-          onClick={() => setExpanded(true)}
-        >
-          Prikaži sve ({cityList.length})
-        </button>
-      )}
+        <InputGroup className="mt-4">
+          <InputGroupAddon>
+            <SearchIcon className="size-4" />
+          </InputGroupAddon>
+          <InputGroupInput
+            type="search"
+            placeholder={`Pretraži gradove — ${drzava}`}
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setExpanded(false);
+            }}
+            aria-label={`Pretraga gradova u ${drzava}`}
+          />
+        </InputGroup>
 
-      {!search.trim() && expanded && cityList.length > MAX_VISIBLE && (
-        <button
-          type="button"
-          className={styles.showMoreBtn}
-          onClick={() => setExpanded(false)}
-        >
-          Prikaži manje
-        </button>
-      )}
-    </div>
+        {search.trim() && filteredCount === 0 ? (
+          <p className="text-muted-foreground mt-2 text-sm italic">
+            Nema rezultata za „{search.trim()}”.
+          </p>
+        ) : (
+          <div className="mt-2 grid grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] gap-2">
+            {visibleGradovi.map((grad) => (
+              <CheckboxTile
+                key={grad}
+                checked={gradovi.includes(grad)}
+                onCheckedChange={() => toggleGrad(grad)}
+              >
+                {grad}
+              </CheckboxTile>
+            ))}
+          </div>
+        )}
+
+        {hasMore ? (
+          <Button
+            type="button"
+            variant="outline"
+            className="mt-2 w-full border-dashed"
+            onClick={() => setExpanded(true)}
+          >
+            Prikaži sve ({cityList.length})
+          </Button>
+        ) : null}
+
+        {!search.trim() && expanded && cityList.length > MAX_VISIBLE ? (
+          <Button
+            type="button"
+            variant="outline"
+            className="mt-2 w-full border-dashed"
+            onClick={() => setExpanded(false)}
+          >
+            Prikaži manje
+          </Button>
+        ) : null}
+      </CardContent>
+    </Card>
   );
 }
 
@@ -179,38 +206,37 @@ export function MjestaRadaPicker({
   };
 
   return (
-    <div className={styles.wrap}>
+    <div className="flex flex-col gap-6">
       <div>
-        <p className={styles.groupTitle}>Države rada</p>
-        <p className={styles.hint}>Možete izabrati jednu ili više država.</p>
-        <div className={styles.checkboxGrid}>
+        <p className="text-sm font-semibold">Države rada</p>
+        <p className="text-muted-foreground mt-1 text-[0.8125rem]">
+          Možete izabrati jednu ili više država.
+        </p>
+        <div className="mt-2 grid grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] gap-2">
           {DRZAVE.map((drzava) => (
-            <label
+            <CheckboxTile
               key={drzava}
-              className={`${styles.checkLabel} ${drzave.includes(drzava) ? styles.checkLabelActive : ""}`}
+              checked={drzave.includes(drzava)}
+              onCheckedChange={() => toggleDrzava(drzava)}
             >
-              <input
-                type="checkbox"
-                className={styles.checkInput}
-                checked={drzave.includes(drzava)}
-                onChange={() => toggleDrzava(drzava)}
-              />
               {drzava}
-            </label>
+            </CheckboxTile>
           ))}
         </div>
       </div>
 
       <div>
-        <p className={styles.groupTitle}>Gradovi</p>
-        <p className={styles.hint}>
+        <p className="text-sm font-semibold">Gradovi</p>
+        <p className="text-muted-foreground mt-1 text-[0.8125rem]">
           Prikazano je do {MAX_VISIBLE} gradova po državi. Koristite pretragu ili
           „Prikaži sve” za ostale.
         </p>
         {drzave.length === 0 ? (
-          <p className={styles.empty}>Prvo izaberite državu.</p>
+          <p className="text-muted-foreground mt-2 text-sm italic">
+            Prvo izaberite državu.
+          </p>
         ) : (
-          <div className={styles.cityGroups}>
+          <div className="mt-2 flex flex-col gap-6">
             {drzave.map((drzava) => (
               <CityGroup
                 key={drzava}

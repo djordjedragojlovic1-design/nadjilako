@@ -8,14 +8,17 @@ import {
   type ChangeEvent,
   type FormEvent,
 } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { StarRatingInput } from "@/components/usluge/StarRating/StarRatingInput";
 import {
   createRecenzijaClient,
   KOMENTAR_MAX,
   updateRecenzijaClient,
 } from "@/lib/usluge/recenzije-client";
-import authStyles from "@/components/auth/auth.module.css";
-import styles from "./RecenzijaForm.module.css";
 
 export type RecenzijaInitial = {
   id: number;
@@ -131,105 +134,101 @@ export function RecenzijaForm({
   }
 
   return (
-    <form className={styles.form} onSubmit={handleSubmit}>
-      <h3 className={styles.title}>
-        {jeIzmjena ? "Uredite recenziju" : "Ostavite recenziju"}
-      </h3>
-
-      {error && (
-        <p className={`${authStyles.alert} ${authStyles.alertError}`} role="alert">
-          {error}
-        </p>
-      )}
-
-      <div className={authStyles.field}>
-        <span className={authStyles.label}>Ocjena *</span>
-        <StarRatingInput value={ocjena} onChange={setOcjena} disabled={pending} />
-      </div>
-
-      <div className={authStyles.field}>
-        <label className={authStyles.label} htmlFor="komentar">
-          Komentar
-        </label>
-        <textarea
-          id="komentar"
-          name="komentar"
-          rows={4}
-          maxLength={KOMENTAR_MAX}
-          className={authStyles.textarea}
-          value={komentar}
-          onChange={(e) => setKomentar(e.target.value)}
-          placeholder="Podijelite svoje iskustvo s ovom uslugom..."
-          disabled={pending}
-        />
-      </div>
-
-      <div className={authStyles.field}>
-        <span className={authStyles.label}>Slika (opciono)</span>
-        <div className={styles.slikaRow}>
-          {prikazanaSlika && (
-            <div className={styles.slikaPreview}>
-              <Image
-                src={prikazanaSlika}
-                alt="Pregled slike"
-                fill
-                sizes="120px"
-                className={styles.slikaImg}
-                unoptimized
-              />
-            </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>{jeIzmjena ? "Uredite recenziju" : "Ostavite recenziju"}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
           )}
-          <div className={styles.slikaActions}>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className={styles.hiddenInput}
-              onChange={handleSlikaChange}
+
+          <div className="flex flex-col gap-1.5">
+            <Label>Ocjena *</Label>
+            <StarRatingInput value={ocjena} onChange={setOcjena} disabled={pending} />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="komentar">Komentar</Label>
+            <Textarea
+              id="komentar"
+              name="komentar"
+              rows={4}
+              maxLength={KOMENTAR_MAX}
+              value={komentar}
+              onChange={(e) => setKomentar(e.target.value)}
+              placeholder="Podijelite svoje iskustvo s ovom uslugom..."
               disabled={pending}
-              tabIndex={-1}
             />
-            <button
-              type="button"
-              className={styles.pickBtn}
-              onClick={() => fileInputRef.current?.click()}
-              disabled={pending}
-            >
-              {prikazanaSlika ? "Promijeni sliku" : "Dodaj sliku"}
-            </button>
-            {prikazanaSlika && (
-              <button
-                type="button"
-                className={styles.removeBtn}
-                onClick={ukloni}
-                disabled={pending}
-              >
-                Ukloni
-              </button>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label>Slika (opciono)</Label>
+            <div className="flex items-center gap-4">
+              {prikazanaSlika && (
+                <div className="relative h-20 w-[7.5rem] shrink-0 overflow-hidden rounded-lg border">
+                  <Image
+                    src={prikazanaSlika}
+                    alt="Pregled slike"
+                    fill
+                    sizes="120px"
+                    className="object-cover"
+                    unoptimized
+                  />
+                </div>
+              )}
+              <div className="flex flex-wrap gap-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="sr-only"
+                  onChange={handleSlikaChange}
+                  disabled={pending}
+                  tabIndex={-1}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={pending}
+                >
+                  {prikazanaSlika ? "Promijeni sliku" : "Dodaj sliku"}
+                </Button>
+                {prikazanaSlika && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="hover:border-destructive hover:text-destructive"
+                    onClick={ukloni}
+                    disabled={pending}
+                  >
+                    Ukloni
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <Button type="submit" disabled={pending}>
+              {pending
+                ? "Slanje..."
+                : jeIzmjena
+                  ? "Sačuvaj izmjene"
+                  : "Objavi recenziju"}
+            </Button>
+            {onCancel && (
+              <Button type="button" variant="outline" onClick={onCancel} disabled={pending}>
+                Odustani
+              </Button>
             )}
           </div>
-        </div>
-      </div>
-
-      <div className={styles.actions}>
-        <button type="submit" className={styles.submit} disabled={pending}>
-          {pending
-            ? "Slanje..."
-            : jeIzmjena
-              ? "Sačuvaj izmjene"
-              : "Objavi recenziju"}
-        </button>
-        {onCancel && (
-          <button
-            type="button"
-            className={styles.cancel}
-            onClick={onCancel}
-            disabled={pending}
-          >
-            Odustani
-          </button>
-        )}
-      </div>
-    </form>
+        </form>
+      </CardContent>
+    </Card>
   );
 }

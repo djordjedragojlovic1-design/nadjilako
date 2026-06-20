@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   useEffect,
@@ -10,7 +9,15 @@ import {
   type FormEvent,
 } from "react";
 import { AppLink } from "@/components/ui/AppLink";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { ObrisiNalogSection } from "@/components/profil/ObrisiNalogSection/ObrisiNalogSection";
 import { updateProfilClient } from "@/lib/korisnik/update-client";
 import {
   POZIVNI_BROJEVI,
@@ -18,8 +25,7 @@ import {
   sastaviBrojTelefona,
 } from "@/lib/telefon/pozivni";
 import { DRZAVE } from "@/types/database";
-import authStyles from "@/components/auth/auth.module.css";
-import styles from "./UrediProfilForm.module.css";
+import { cn } from "@/lib/utils";
 
 export type UrediProfilInitial = {
   ime: string;
@@ -38,6 +44,10 @@ type UrediProfilFormProps = {
   userUuid: string;
   initial: UrediProfilInitial;
 };
+
+const selectClassName = cn(
+  "h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 dark:bg-input/30",
+);
 
 function getInitials(ime: string, prezime: string) {
   return `${ime.charAt(0)}${prezime.charAt(0)}`.toUpperCase();
@@ -145,110 +155,101 @@ export function UrediProfilForm({
   }
 
   return (
-    <form className={authStyles.form} onSubmit={handleSubmit}>
+    <form className="space-y-6" onSubmit={handleSubmit}>
       {error && (
-        <p className={`${authStyles.alert} ${authStyles.alertError}`} role="alert">
-          {error}
-        </p>
+        <Alert variant="destructive" role="alert">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
       {success && (
-        <p className={`${authStyles.alert} ${authStyles.alertSuccess}`} role="status">
-          {success}
-        </p>
+        <Alert
+          className="border-emerald-500/35 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+          role="status"
+        >
+          <AlertDescription>{success}</AlertDescription>
+        </Alert>
       )}
 
-      <div className={authStyles.field}>
-        <span className={authStyles.label} id="avatar-label">
-          Profilna slika
-        </span>
-        <div className={styles.avatarRow} role="group" aria-labelledby="avatar-label">
-          <div className={styles.avatar}>
+      <div className="space-y-2">
+        <Label id="avatar-label">Profilna slika</Label>
+        <div
+          className="flex items-center gap-6"
+          role="group"
+          aria-labelledby="avatar-label"
+        >
+          <Avatar className="size-[88px] shrink-0">
             {prikazaniAvatar ? (
-              <Image
-                src={prikazaniAvatar}
-                alt="Profilna slika"
-                width={88}
-                height={88}
-                unoptimized
-                className={styles.avatarImg}
-              />
-            ) : (
-              <span className={styles.avatarInitials}>
-                {getInitials(ime || "?", prezime || "")}
-              </span>
-            )}
-          </div>
-          <div className={styles.avatarActions}>
+              <AvatarImage src={prikazaniAvatar} alt="Profilna slika" />
+            ) : null}
+            <AvatarFallback className="text-2xl font-bold">
+              {getInitials(ime || "?", prezime || "")}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex flex-wrap gap-2">
             <input
               ref={fileInputRef}
               id="avatar"
               type="file"
               accept="image/*"
-              className={styles.hiddenInput}
+              className="sr-only"
               onChange={handleAvatarChange}
               disabled={pending}
               tabIndex={-1}
             />
-            <button
+            <Button
               type="button"
-              className={styles.pickBtn}
+              variant="outline"
               onClick={() => fileInputRef.current?.click()}
               disabled={pending}
             >
               Promijeni sliku
-            </button>
+            </Button>
             {prikazaniAvatar && (
-              <button
+              <Button
                 type="button"
-                className={styles.removeBtn}
+                variant="destructive"
                 onClick={removeAvatar}
                 disabled={pending}
               >
                 Ukloni
-              </button>
+              </Button>
             )}
           </div>
         </div>
-        <p className={styles.hint}>Sajt automatski smanjuje sliku na najviše 2 MB.</p>
+        <p className="text-muted-foreground text-sm">
+          Sajt automatski smanjuje sliku na najviše 2 MB.
+        </p>
       </div>
 
-      <div className={authStyles.field}>
-        <label className={authStyles.label} htmlFor="ime">
-          Ime *
-        </label>
-        <input
+      <div className="space-y-2">
+        <Label htmlFor="ime">Ime *</Label>
+        <Input
           id="ime"
           name="ime"
           type="text"
           autoComplete="given-name"
           required
-          className={authStyles.input}
           value={ime}
           onChange={(e) => setIme(e.target.value)}
         />
       </div>
 
-      <div className={authStyles.field}>
-        <label className={authStyles.label} htmlFor="prezime">
-          Prezime *
-        </label>
-        <input
+      <div className="space-y-2">
+        <Label htmlFor="prezime">Prezime *</Label>
+        <Input
           id="prezime"
           name="prezime"
           type="text"
           autoComplete="family-name"
           required
-          className={authStyles.input}
           value={prezime}
           onChange={(e) => setPrezime(e.target.value)}
         />
       </div>
 
-      <div className={authStyles.field}>
-        <label className={authStyles.label} htmlFor="korisnicko_ime">
-          Korisničko ime *
-        </label>
-        <input
+      <div className="space-y-2">
+        <Label htmlFor="korisnicko_ime">Korisničko ime *</Label>
+        <Input
           id="korisnicko_ime"
           name="korisnicko_ime"
           type="text"
@@ -257,34 +258,28 @@ export function UrediProfilForm({
           minLength={3}
           maxLength={30}
           pattern="[a-zA-Z0-9_.-]+"
-          className={authStyles.input}
           defaultValue={initial.korisnicko_ime}
         />
       </div>
 
-      <div className={authStyles.field}>
-        <label className={authStyles.label} htmlFor="inf_o_korisniku">
-          O meni
-        </label>
-        <textarea
+      <div className="space-y-2">
+        <Label htmlFor="inf_o_korisniku">O meni</Label>
+        <Textarea
           id="inf_o_korisniku"
           name="inf_o_korisniku"
           rows={4}
-          className={authStyles.textarea}
           defaultValue={initial.inf_o_korisniku}
           placeholder="Nekoliko rečenica o vama i vašem radu..."
         />
       </div>
 
-      <div className={authStyles.field}>
-        <label className={authStyles.label} htmlFor="drzava">
-          Država *
-        </label>
+      <div className="space-y-2">
+        <Label htmlFor="drzava">Država *</Label>
         <select
           id="drzava"
           name="drzava"
           required
-          className={authStyles.select}
+          className={selectClassName}
           defaultValue={initial.drzava}
         >
           {DRZAVE.map((drzava) => (
@@ -295,15 +290,13 @@ export function UrediProfilForm({
         </select>
       </div>
 
-      <div className={authStyles.field}>
-        <label className={authStyles.label} htmlFor="telefon">
-          Broj telefona
-        </label>
-        <div className={styles.telefonRow}>
+      <div className="space-y-2">
+        <Label htmlFor="telefon">Broj telefona</Label>
+        <div className="flex items-center gap-2">
           <select
             id="pozivni"
             name="pozivni"
-            className={`${authStyles.select} ${styles.pozivniSelect}`}
+            className={cn(selectClassName, "w-auto min-w-36 shrink-0")}
             value={pozivni}
             onChange={(e) => setPozivni(e.target.value)}
             aria-label="Pozivni broj države"
@@ -314,13 +307,13 @@ export function UrediProfilForm({
               </option>
             ))}
           </select>
-          <input
+          <Input
             id="telefon"
             name="telefon"
             type="tel"
             inputMode="tel"
             autoComplete="tel-national"
-            className={authStyles.input}
+            className="min-w-0 flex-1"
             value={telefon}
             onChange={(e) => setTelefon(e.target.value)}
             placeholder={
@@ -329,74 +322,74 @@ export function UrediProfilForm({
             }
           />
         </div>
-        <p className={styles.hint}>
+        <p className="text-muted-foreground text-sm">
           Izaberite državu i unesite broj (npr. 066 123 456). Broj verifikujete
           na stranici „Verifikacija”.
         </p>
       </div>
 
-      <div className={authStyles.field}>
-        <span className={authStyles.label}>Krediti</span>
-        <p className={styles.readonly}>{initial.krediti} kredita</p>
+      <div className="space-y-2">
+        <Label>Krediti</Label>
+        <p className="rounded-lg border border-dashed bg-muted px-4 py-3 text-muted-foreground">
+          {initial.krediti} kredita
+        </p>
       </div>
 
-      <hr className={styles.divider} />
+      <Separator />
 
-      <div className={authStyles.field}>
-        <label className={authStyles.label} htmlFor="email">
-          Email *
-        </label>
-        <input
+      <div className="space-y-2">
+        <Label htmlFor="email">Email *</Label>
+        <Input
           id="email"
           name="email"
           type="email"
           autoComplete="email"
           required
-          className={authStyles.input}
           defaultValue={initial.email}
         />
-        <p className={styles.hint}>
+        <p className="text-muted-foreground text-sm">
           Promjenom emaila šaljemo link za potvrdu na novu adresu.
         </p>
       </div>
 
-      <hr className={styles.divider} />
+      <Separator />
 
-      <div className={authStyles.field}>
-        <label className={authStyles.label} htmlFor="nova_lozinka">
-          Nova lozinka
-        </label>
-        <input
+      <div className="space-y-2">
+        <Label htmlFor="nova_lozinka">Nova lozinka</Label>
+        <Input
           id="nova_lozinka"
           name="nova_lozinka"
           type="password"
           autoComplete="new-password"
           minLength={6}
-          className={authStyles.input}
           placeholder="Ostavite prazno ako ne mijenjate"
         />
       </div>
 
-      <div className={authStyles.field}>
-        <label className={authStyles.label} htmlFor="potvrda_lozinke">
-          Potvrda nove lozinke
-        </label>
-        <input
+      <div className="space-y-2">
+        <Label htmlFor="potvrda_lozinke">Potvrda nove lozinke</Label>
+        <Input
           id="potvrda_lozinke"
           name="potvrda_lozinke"
           type="password"
           autoComplete="new-password"
           minLength={6}
-          className={authStyles.input}
         />
       </div>
 
-      <button type="submit" className={authStyles.submit} disabled={pending}>
+      <Button type="submit" className="w-full" disabled={pending}>
         {pending ? "Čuvanje..." : "Sačuvaj izmjene"}
-      </button>
+      </Button>
 
-      <p className={authStyles.footer}>
-        <AppLink href={`/profil/${korisnikId}`}>Nazad na profil</AppLink>
+      <ObrisiNalogSection />
+
+      <p className="text-muted-foreground text-center text-sm">
+        <AppLink
+          href={`/profil/${korisnikId}`}
+          className="text-primary font-semibold hover:underline"
+        >
+          Nazad na profil
+        </AppLink>
       </p>
     </form>
   );

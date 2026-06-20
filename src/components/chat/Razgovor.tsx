@@ -11,6 +11,10 @@ import {
   type KeyboardEvent,
 } from "react";
 import { AppLink } from "@/components/ui/AppLink";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { createClient } from "@/lib/supabase/client";
 import {
   findOrCreateChat,
@@ -31,7 +35,7 @@ import {
   type Poruka,
   type PorukaRow,
 } from "@/lib/chat/types";
-import styles from "./Chat.module.css";
+import { cn } from "@/lib/utils";
 
 type RazgovorProps = {
   chatId: number | null;
@@ -74,13 +78,11 @@ export function Razgovor({
     scrollToBottom();
   }, [poruke, scrollToBottom]);
 
-  // Označi pristigle poruke kao pročitane + osvježi listu (badge).
   useEffect(() => {
     if (chatId == null) return;
     void oznaciProcitano(chatId, viewerId).then(() => router.refresh());
   }, [chatId, viewerId, router]);
 
-  // Realtime: nove poruke i izmjene (status pročitano).
   useEffect(() => {
     if (chatId == null) return;
     const supabase = createClient();
@@ -153,7 +155,6 @@ export function Razgovor({
     setSalje(true);
     setError(null);
 
-    // Novi razgovor — kreiraj ga tek sada (pri prvoj poruci).
     let targetChatId = chatId;
     if (targetChatId == null) {
       const { chatId: noviId, error: greskaChat } = await findOrCreateChat({
@@ -184,7 +185,6 @@ export function Razgovor({
       return;
     }
 
-    // Ako je ovo bio novi razgovor, preusmjeri na njegovu stranicu.
     if (chatId == null) {
       router.replace(`/chat/${targetChatId}`);
       router.refresh();
@@ -208,12 +208,14 @@ export function Razgovor({
     }
   };
 
-  let prethodniDan = "";
-
   return (
     <>
-      <header className={styles.chatHeader}>
-        <AppLink href="/chat" className={styles.backBtn} aria-label="Nazad">
+      <header className="flex items-center gap-2 border-b px-4 py-2">
+        <AppLink
+          href="/chat"
+          className="hidden size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted max-md:inline-flex"
+          aria-label="Nazad"
+        >
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
             <path
               d="M15 18l-6-6 6-6"
@@ -224,33 +226,28 @@ export function Razgovor({
             />
           </svg>
         </AppLink>
-        <span className={styles.avatar}>
+        <Avatar className="size-11 shrink-0">
           {drugiUcesnik.profilna_slika ? (
-            <Image
-              src={drugiUcesnik.profilna_slika}
-              alt=""
-              fill
-              sizes="44px"
-              className={styles.avatarImg}
-            />
-          ) : (
-            getInitials(drugiUcesnik.ime, drugiUcesnik.prezime)
-          )}
-        </span>
-        <span className={styles.chatHeaderInfo}>
-          <span className={styles.chatHeaderTitle}>
+            <AvatarImage src={drugiUcesnik.profilna_slika} alt="" />
+          ) : null}
+          <AvatarFallback className="font-semibold">
+            {getInitials(drugiUcesnik.ime, drugiUcesnik.prezime)}
+          </AvatarFallback>
+        </Avatar>
+        <span className="min-w-0">
+          <span className="block truncate text-sm">
             <AppLink
               href={`/profil/${drugiUcesnik.id}`}
-              className={styles.chatHeaderName}
+              className="font-semibold hover:underline"
             >
               @{drugiUcesnik.korisnicko_ime}
             </AppLink>
             {usluga && (
               <>
-                <span className={styles.chatHeaderSep}> - </span>
+                <span className="text-muted-foreground"> - </span>
                 <AppLink
                   href={`/usluga/${usluga.id}`}
-                  className={styles.chatHeaderUsluga}
+                  className="text-primary hover:underline"
                 >
                   {usluga.naziv}
                 </AppLink>
@@ -260,30 +257,39 @@ export function Razgovor({
         </span>
       </header>
 
-      <div className={styles.poruke} ref={porukeRef}>
+      <div
+        className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto p-4"
+        ref={porukeRef}
+      >
         {poruke.length === 0 && (
-          <p className={styles.empty}>
+          <p className="py-8 text-center text-sm text-muted-foreground">
             Započnite razgovor — pošaljite prvu poruku.
           </p>
         )}
-        {poruke.map((p) => {
+        {poruke.map((p, i) => {
           const dan = danKljuc(p.sentAt);
-          const noviDan = dan !== prethodniDan;
-          prethodniDan = dan;
+          const noviDan =
+            i === 0 || dan !== danKljuc(poruke[i - 1]!.sentAt);
           return (
             <div key={p.id} style={{ display: "contents" }}>
               {noviDan && (
-                <span className={styles.dan}>{formatDanGrupa(p.sentAt)}</span>
+                <span className="my-2 self-center rounded-full bg-muted px-2.5 py-0.5 text-xs text-muted-foreground">
+                  {formatDanGrupa(p.sentAt)}
+                </span>
               )}
               <div
-                className={`${styles.bubbleRow} ${
-                  p.odMene ? styles.bubbleRowMine : styles.bubbleRowTheirs
-                }`}
+                className={cn(
+                  "flex max-w-[78%]",
+                  p.odMene ? "self-end justify-end" : "self-start",
+                )}
               >
                 <div
-                  className={`${styles.bubble} ${
-                    p.odMene ? styles.bubbleMine : styles.bubbleTheirs
-                  }`}
+                  className={cn(
+                    "rounded-lg px-3 py-2 text-sm leading-relaxed break-words whitespace-pre-wrap",
+                    p.odMene
+                      ? "rounded-br-sm bg-primary text-primary-foreground"
+                      : "rounded-bl-sm bg-muted text-foreground",
+                  )}
                 >
                   {p.slikaUrl && (
                     <a
@@ -297,19 +303,20 @@ export function Razgovor({
                         width={240}
                         height={200}
                         unoptimized
-                        className={styles.bubbleImg}
+                        className="mb-1 max-h-[280px] max-w-[240px] rounded-md object-cover"
                       />
                     </a>
                   )}
                   {p.poruka && <span>{p.poruka}</span>}
                   <span
-                    className={`${styles.bubbleMeta} ${
-                      p.odMene ? styles.bubbleMineMeta : ""
-                    }`}
+                    className={cn(
+                      "mt-0.5 flex items-center gap-1 text-[0.68rem] opacity-70",
+                      p.odMene && "justify-end",
+                    )}
                   >
                     {formatVrijemePoruke(p.sentAt)}
                     {p.odMene && (
-                      <span className={styles.readTick}>
+                      <span className="font-bold">
                         {p.isRead ? "✓✓" : "✓"}
                       </span>
                     )}
@@ -321,32 +328,37 @@ export function Razgovor({
         })}
       </div>
 
-      {error && <p className={styles.error}>{error}</p>}
+      {error && (
+        <Alert variant="destructive" className="mx-4 mb-0 rounded-none border-x-0 border-t-0">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
       {slikaPreview && (
-        <div className={styles.previewBar}>
-          <span className={styles.previewThumb}>
+        <div className="flex items-center gap-2 px-4 pt-2">
+          <span className="relative size-14 overflow-hidden rounded-lg border">
             <Image
               src={slikaPreview}
               alt=""
               fill
               sizes="56px"
               unoptimized
-              className={styles.previewImg}
+              className="object-cover"
             />
           </span>
-          <button
+          <Button
             type="button"
-            className={styles.previewRemove}
+            variant="outline"
+            size="icon-xs"
             onClick={ukloniSliku}
             aria-label="Ukloni sliku"
           >
             ×
-          </button>
+          </Button>
         </div>
       )}
 
-      <div className={styles.composer}>
+      <div className="flex items-end gap-2 border-t px-4 py-2">
         <input
           ref={fileRef}
           type="file"
@@ -354,9 +366,10 @@ export function Razgovor({
           hidden
           onChange={onIzaberiSliku}
         />
-        <button
+        <Button
           type="button"
-          className={styles.iconBtn}
+          variant="ghost"
+          size="icon"
           onClick={() => fileRef.current?.click()}
           aria-label="Dodaj sliku"
           disabled={salje}
@@ -380,9 +393,9 @@ export function Razgovor({
               strokeLinejoin="round"
             />
           </svg>
-        </button>
-        <textarea
-          className={styles.composerInput}
+        </Button>
+        <Textarea
+          className="max-h-[120px] min-h-8 flex-1 resize-none"
           placeholder="Napišite poruku..."
           rows={1}
           value={tekst}
@@ -390,9 +403,9 @@ export function Razgovor({
           onChange={(e) => setTekst(e.target.value)}
           onKeyDown={onKeyDown}
         />
-        <button
+        <Button
           type="button"
-          className={styles.sendBtn}
+          size="icon"
           onClick={() => void posalji()}
           disabled={salje || (!tekst.trim() && !slikaFile)}
           aria-label="Pošalji"
@@ -406,7 +419,7 @@ export function Razgovor({
               strokeLinejoin="round"
             />
           </svg>
-        </button>
+        </Button>
       </div>
     </>
   );

@@ -2,6 +2,24 @@
 
 import { useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
 import { GRADOVI_PO_DRZAVI } from "@/lib/lokacije/gradovi";
 import {
   DEFAULT_VALUTA,
@@ -14,11 +32,58 @@ import type {
   PretragaFilteriValues,
 } from "@/lib/usluge/types";
 import { KategorijaSelect } from "./KategorijaSelect";
-import styles from "./PretragaFilteri.module.css";
+
+const ALL = "__all__";
+
+function drzavaLabel(drzava: string, facets: PretragaFacets) {
+  if (!drzava) return "Sve države";
+  const item = facets.drzave.find((d) => d.value === drzava);
+  return item ? `${item.value} (${item.count})` : drzava;
+}
+
+function gradLabel(
+  grad: string,
+  drzava: string,
+  gradBroj: Map<string, number>,
+) {
+  if (!drzava) return "Prvo izaberi državu";
+  if (!grad) return "Svi gradovi";
+  const broj = gradBroj.get(grad);
+  return broj != null ? `${grad} (${broj})` : grad;
+}
+
+function tipLabel(tip: string, facets: PretragaFacets) {
+  if (!tip) return "Svi tipovi";
+  const item = facets.tipovi.find((t) => t.value === tip);
+  const naziv = TIP_CIJENE_LABELS[tip] ?? tip;
+  return item ? `${naziv} (${item.count})` : naziv;
+}
 
 type PretragaFilteriProps = {
   filteri: PretragaFilteriValues;
   facets: PretragaFacets;
+};
+
+type FilterFormProps = {
+  facets: PretragaFacets;
+  drzava: string;
+  setDrzava: (value: string) => void;
+  grad: string;
+  setGrad: (value: string) => void;
+  kategorija: string | null;
+  setKategorija: (value: string | null) => void;
+  tip: string;
+  setTip: (value: string) => void;
+  valuta: string;
+  setValuta: (value: string) => void;
+  cijenaMin: string;
+  setCijenaMin: (value: string) => void;
+  cijenaMax: string;
+  setCijenaMax: (value: string) => void;
+  ocjena: number | null;
+  setOcjena: (value: number | null) => void;
+  gradBroj: Map<string, number>;
+  gradoviZaDrzavu: readonly string[];
 };
 
 function setOrDelete(
@@ -31,6 +96,215 @@ function setOrDelete(
   } else {
     params.set(key, String(value));
   }
+}
+
+function FilterForm({
+  facets,
+  drzava,
+  setDrzava,
+  grad,
+  setGrad,
+  kategorija,
+  setKategorija,
+  tip,
+  setTip,
+  valuta,
+  setValuta,
+  cijenaMin,
+  setCijenaMin,
+  cijenaMax,
+  setCijenaMax,
+  ocjena,
+  setOcjena,
+  gradBroj,
+  gradoviZaDrzavu,
+}: FilterFormProps) {
+  return (
+    <>
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="f-drzava" className="text-muted-foreground text-xs font-semibold">
+          Država
+        </Label>
+        <Select
+          value={drzava || ALL}
+          onValueChange={(v) => {
+            setDrzava(!v || v === ALL ? "" : v);
+            setGrad("");
+          }}
+        >
+          <SelectTrigger id="f-drzava" className="w-full">
+            <SelectValue>{drzavaLabel(drzava, facets)}</SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL}>Sve države</SelectItem>
+            {facets.drzave.map((d) => (
+              <SelectItem key={d.value} value={d.value}>
+                {d.value} ({d.count})
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="f-grad" className="text-muted-foreground text-xs font-semibold">
+          Grad
+        </Label>
+        <Select
+          value={grad || ALL}
+          onValueChange={(v) => setGrad(!v || v === ALL ? "" : v)}
+          disabled={!drzava}
+        >
+          <SelectTrigger id="f-grad" className="w-full">
+            <SelectValue>{gradLabel(grad, drzava, gradBroj)}</SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL}>
+              {drzava ? "Svi gradovi" : "Prvo izaberi državu"}
+            </SelectItem>
+            {gradoviZaDrzavu.map((g) => {
+              const broj = gradBroj.get(g);
+              return (
+                <SelectItem key={g} value={g}>
+                  {broj != null ? `${g} (${broj})` : g}
+                </SelectItem>
+              );
+            })}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <Label className="text-muted-foreground text-xs font-semibold">
+          Kategorija
+        </Label>
+        <KategorijaSelect
+          kategorije={facets.kategorije}
+          value={kategorija}
+          onChange={setKategorija}
+        />
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="f-tip" className="text-muted-foreground text-xs font-semibold">
+          Tip cijene
+        </Label>
+        <Select
+          value={tip || ALL}
+          onValueChange={(v) => setTip(!v || v === ALL ? "" : v)}
+        >
+          <SelectTrigger id="f-tip" className="w-full">
+            <SelectValue>{tipLabel(tip, facets)}</SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL}>Svi tipovi</SelectItem>
+            {facets.tipovi.map((t) => (
+              <SelectItem key={t.value} value={t.value}>
+                {(TIP_CIJENE_LABELS[t.value] ?? t.value)} ({t.count})
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {tip ? (
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="f-valuta" className="text-muted-foreground text-xs font-semibold">
+            Valuta (samo radi lakšeg unosa)
+          </Label>
+          <Select
+            value={valuta}
+            onValueChange={(v) => {
+              if (v) setValuta(v);
+            }}
+          >
+            <SelectTrigger id="f-valuta" className="w-full">
+              <SelectValue>{VALUTA_LABELS[valuta as keyof typeof VALUTA_LABELS] ?? valuta}</SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {VALUTA_OPTIONS.map((v) => (
+                <SelectItem key={v} value={v}>
+                  {VALUTA_LABELS[v] ?? v}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Label className="text-muted-foreground mt-3 text-xs font-semibold">
+            Raspon cijene
+          </Label>
+          <div className="flex items-center gap-2">
+            <Input
+              type="number"
+              min={0}
+              inputMode="numeric"
+              placeholder="Od"
+              value={cijenaMin}
+              onChange={(e) => setCijenaMin(e.target.value)}
+              aria-label="Cijena od"
+            />
+            <span className="text-muted-foreground">–</span>
+            <Input
+              type="number"
+              min={0}
+              inputMode="numeric"
+              placeholder="Do"
+              value={cijenaMax}
+              onChange={(e) => setCijenaMax(e.target.value)}
+              aria-label="Cijena do"
+            />
+          </div>
+          <p className="text-muted-foreground text-xs">
+            Prikazuju se i usluge u drugim valutama (preračun u pozadini).
+          </p>
+        </div>
+      ) : null}
+
+      <div className="flex flex-col gap-1.5">
+        <Label className="text-muted-foreground text-xs font-semibold">
+          Minimalna ocjena
+        </Label>
+        <div className="flex gap-1">
+          {[...facets.ocjene]
+            .sort((a, b) => a.value - b.value)
+            .map((o) => (
+              <Button
+                key={o.value}
+                type="button"
+                variant={ocjena === o.value ? "default" : "outline"}
+                size="sm"
+                className="h-auto flex-1 px-1 py-2 text-xs"
+                onClick={() =>
+                  setOcjena(ocjena === o.value ? null : o.value)
+                }
+              >
+                {o.value}+{" "}
+                <span className="font-normal opacity-80">({o.count})</span>
+              </Button>
+            ))}
+        </div>
+      </div>
+    </>
+  );
+}
+
+function FilterActions({
+  onApply,
+  onReset,
+}: {
+  onApply: () => void;
+  onReset: () => void;
+}) {
+  return (
+    <div className="flex flex-col gap-2">
+      <Button type="button" onClick={onApply}>
+        Primijeni
+      </Button>
+      <Button type="button" variant="outline" onClick={onReset}>
+        Poništi filtere
+      </Button>
+    </div>
+  );
 }
 
 export function PretragaFilteri({ filteri, facets }: PretragaFilteriProps) {
@@ -59,8 +333,30 @@ export function PretragaFilteri({ filteri, facets }: PretragaFilteriProps) {
   }, [facets.gradovi]);
 
   const gradoviZaDrzavu = drzava
-    ? GRADOVI_PO_DRZAVI[drzava as keyof typeof GRADOVI_PO_DRZAVI] ?? []
+    ? (GRADOVI_PO_DRZAVI[drzava as keyof typeof GRADOVI_PO_DRZAVI] ?? [])
     : [];
+
+  const formProps: FilterFormProps = {
+    facets,
+    drzava,
+    setDrzava,
+    grad,
+    setGrad,
+    kategorija,
+    setKategorija,
+    tip,
+    setTip,
+    valuta,
+    setValuta,
+    cijenaMin,
+    setCijenaMin,
+    cijenaMax,
+    setCijenaMax,
+    ocjena,
+    setOcjena,
+    gradBroj,
+    gradoviZaDrzavu,
+  };
 
   const primijeni = () => {
     const params = new URLSearchParams(searchParams.toString());
@@ -113,184 +409,44 @@ export function PretragaFilteri({ filteri, facets }: PretragaFilteriProps) {
   };
 
   return (
-    <div className={styles.root}>
-      <button
+    <div className="relative">
+      <Button
         type="button"
-        className={styles.mobileToggle}
+        variant="outline"
+        className="hidden w-full max-[880px]:flex"
         onClick={() => setOpen(true)}
       >
         Filteri
-      </button>
+      </Button>
 
-      {open && <div className={styles.overlay} onClick={() => setOpen(false)} />}
-
-      <div className={`${styles.panel} ${open ? styles.panelOpen : ""}`}>
-        <div className={styles.panelHeader}>
-          <h2 className={styles.heading}>Filteri</h2>
-          <button
-            type="button"
-            className={styles.closeBtn}
-            onClick={() => setOpen(false)}
-            aria-label="Zatvori filtere"
-          >
-            ✕
-          </button>
-        </div>
-
-        <div className={styles.group}>
-          <label className={styles.label} htmlFor="f-drzava">
-            Država
-          </label>
-          <select
-            id="f-drzava"
-            className={styles.select}
-            value={drzava}
-            onChange={(e) => {
-              setDrzava(e.target.value);
-              setGrad("");
-            }}
-          >
-            <option value="">Sve države</option>
-            {facets.drzave.map((d) => (
-              <option key={d.value} value={d.value}>
-                {d.value} ({d.count})
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className={styles.group}>
-          <label className={styles.label} htmlFor="f-grad">
-            Grad
-          </label>
-          <select
-            id="f-grad"
-            className={styles.select}
-            value={grad}
-            onChange={(e) => setGrad(e.target.value)}
-            disabled={!drzava}
-          >
-            <option value="">{drzava ? "Svi gradovi" : "Prvo izaberi državu"}</option>
-            {gradoviZaDrzavu.map((g) => {
-              const broj = gradBroj.get(g);
-              return (
-                <option key={g} value={g}>
-                  {broj != null ? `${g} (${broj})` : g}
-                </option>
-              );
-            })}
-          </select>
-        </div>
-
-        <div className={styles.group}>
-          <span className={styles.label}>Kategorija</span>
-          <KategorijaSelect
-            kategorije={facets.kategorije}
-            value={kategorija}
-            onChange={setKategorija}
-          />
-        </div>
-
-        <div className={styles.group}>
-          <label className={styles.label} htmlFor="f-tip">
-            Tip cijene
-          </label>
-          <select
-            id="f-tip"
-            className={styles.select}
-            value={tip}
-            onChange={(e) => setTip(e.target.value)}
-          >
-            <option value="">Svi tipovi</option>
-            {facets.tipovi.map((t) => (
-              <option key={t.value} value={t.value}>
-                {(TIP_CIJENE_LABELS[t.value] ?? t.value)} ({t.count})
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {tip && (
-          <div className={styles.group}>
-            <label className={styles.label} htmlFor="f-valuta">
-              Valuta (samo radi lakšeg unosa)
-            </label>
-            <select
-              id="f-valuta"
-              className={styles.select}
-              value={valuta}
-              onChange={(e) => setValuta(e.target.value)}
-            >
-              {VALUTA_OPTIONS.map((v) => (
-                <option key={v} value={v}>
-                  {VALUTA_LABELS[v] ?? v}
-                </option>
-              ))}
-            </select>
-
-            <span className={styles.label} style={{ marginTop: "0.75rem" }}>
-              Raspon cijene
-            </span>
-            <div className={styles.range}>
-              <input
-                type="number"
-                min={0}
-                inputMode="numeric"
-                className={styles.rangeInput}
-                placeholder="Od"
-                value={cijenaMin}
-                onChange={(e) => setCijenaMin(e.target.value)}
-                aria-label="Cijena od"
-              />
-              <span className={styles.rangeSep}>–</span>
-              <input
-                type="number"
-                min={0}
-                inputMode="numeric"
-                className={styles.rangeInput}
-                placeholder="Do"
-                value={cijenaMax}
-                onChange={(e) => setCijenaMax(e.target.value)}
-                aria-label="Cijena do"
-              />
-            </div>
-            <p className={styles.hint}>
-              Prikazuju se i usluge u drugim valutama (preračun u pozadini).
-            </p>
-          </div>
+      <Card
+        className={cn(
+          "sticky top-[calc(var(--navbar-height)+1rem)] hidden min-[881px]:block",
         )}
+      >
+        <CardHeader className="pb-0">
+          <CardTitle className="text-lg">Filteri</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-6 pt-4">
+          <FilterForm {...formProps} />
+          <FilterActions onApply={primijeni} onReset={ponisti} />
+        </CardContent>
+      </Card>
 
-        <div className={styles.group}>
-          <span className={styles.label}>Minimalna ocjena</span>
-          <div className={styles.ocjene}>
-            {[...facets.ocjene]
-              .sort((a, b) => a.value - b.value)
-              .map((o) => (
-                <button
-                  key={o.value}
-                  type="button"
-                  className={`${styles.ocjenaBtn} ${
-                    ocjena === o.value ? styles.ocjenaActive : ""
-                  }`}
-                  onClick={() =>
-                    setOcjena(ocjena === o.value ? null : o.value)
-                  }
-                >
-                  {o.value}+ <span className={styles.ocjenaCount}>({o.count})</span>
-                </button>
-              ))}
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetContent
+          side="left"
+          className="w-[min(20rem,85vw)] overflow-y-auto sm:max-w-xs"
+        >
+          <SheetHeader>
+            <SheetTitle>Filteri</SheetTitle>
+          </SheetHeader>
+          <div className="flex flex-col gap-6 px-4 pb-4">
+            <FilterForm {...formProps} />
+            <FilterActions onApply={primijeni} onReset={ponisti} />
           </div>
-        </div>
-
-        <div className={styles.actions}>
-          <button type="button" className={styles.applyBtn} onClick={primijeni}>
-            Primijeni
-          </button>
-          <button type="button" className={styles.resetBtn} onClick={ponisti}>
-            Poništi filtere
-          </button>
-        </div>
-      </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

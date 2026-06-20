@@ -40,11 +40,14 @@ export function validateUpdatePayload(
     return "Izaberite tip cijene.";
   }
   if (payload.tip_cijene !== "dogovor") {
-    if (payload.cijena == null || Number.isNaN(payload.cijena)) {
-      return "Unesite cijenu.";
+    if (payload.cijena != null) {
+      if (Number.isNaN(payload.cijena)) return "Cijena nije validna.";
+      if (payload.cijena < 0) return "Cijena ne može biti negativna.";
     }
-    if (payload.cijena < 0) return "Cijena ne može biti negativna.";
-    if (!VALUTA_OPTIONS.includes(payload.valuta as (typeof VALUTA_OPTIONS)[number])) {
+    if (
+      payload.valuta != null &&
+      !VALUTA_OPTIONS.includes(payload.valuta as (typeof VALUTA_OPTIONS)[number])
+    ) {
       return "Izaberite valutu.";
     }
   }

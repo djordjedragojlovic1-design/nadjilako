@@ -4,6 +4,11 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { AppLink } from "@/components/ui/AppLink";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { StarRating } from "@/components/usluge/StarRating/StarRating";
 import { RecenzijaForm } from "@/components/usluge/RecenzijaForm/RecenzijaForm";
@@ -15,7 +20,6 @@ import {
 } from "@/lib/usluge/recenzije-client";
 import type { OdgovorItem, RecenzijaItem } from "@/lib/usluge/types";
 import { formatDatum } from "@/lib/usluge/utils";
-import styles from "./RecenzijeSekcija.module.css";
 
 type RecenzijeSekcijaProps = {
   uslugaId: number;
@@ -27,32 +31,24 @@ function getInitials(ime: string, prezime: string): string {
   return `${ime.charAt(0)}${prezime.charAt(0)}`.toUpperCase();
 }
 
-function Avatar({
+function ReviewAvatar({
   slika,
   ime,
   prezime,
-  velicina = 40,
+  size = "default",
 }: {
   slika: string | null;
   ime: string;
   prezime: string;
-  velicina?: number;
+  size?: "default" | "sm";
 }) {
   return (
-    <div className={styles.avatar} style={{ width: velicina, height: velicina }}>
-      {slika ? (
-        <Image
-          src={slika}
-          alt=""
-          width={velicina}
-          height={velicina}
-          className={styles.avatarImg}
-          unoptimized
-        />
-      ) : (
-        getInitials(ime, prezime)
-      )}
-    </div>
+    <Avatar size={size} className="bg-primary/10 text-primary">
+      {slika ? <AvatarImage src={slika} alt="" /> : null}
+      <AvatarFallback className="bg-primary/10 text-xs font-bold text-primary">
+        {getInitials(ime, prezime)}
+      </AvatarFallback>
+    </Avatar>
   );
 }
 
@@ -100,10 +96,13 @@ function OdgovorForm({
   }
 
   return (
-    <form className={styles.odgovorForm} onSubmit={handleSubmit}>
-      {error && <p className={styles.error}>{error}</p>}
-      <textarea
-        className={styles.odgovorInput}
+    <form className="mt-4 flex flex-col gap-2" onSubmit={handleSubmit}>
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      <Textarea
         rows={2}
         maxLength={KOMENTAR_MAX}
         value={tekst}
@@ -111,18 +110,13 @@ function OdgovorForm({
         placeholder="Napišite odgovor..."
         disabled={pending}
       />
-      <div className={styles.odgovorActions}>
-        <button type="submit" className={styles.smallPrimary} disabled={pending}>
+      <div className="flex gap-2">
+        <Button type="submit" size="sm" disabled={pending}>
           {pending ? "Slanje..." : "Pošalji"}
-        </button>
-        <button
-          type="button"
-          className={styles.smallGhost}
-          onClick={onCancel}
-          disabled={pending}
-        >
+        </Button>
+        <Button type="button" variant="outline" size="sm" onClick={onCancel} disabled={pending}>
           Odustani
-        </button>
+        </Button>
       </div>
     </form>
   );
@@ -138,30 +132,34 @@ function Odgovor({
   onDelete: (id: number) => void;
 }) {
   return (
-    <li className={styles.odgovor}>
-      <Avatar
+    <li className="flex gap-2">
+      <ReviewAvatar
         slika={odgovor.ocjenjivac.profilna_slika}
         ime={odgovor.ocjenjivac.ime}
         prezime={odgovor.ocjenjivac.prezime}
-        velicina={32}
+        size="sm"
       />
-      <div className={styles.odgovorBody}>
-        <div className={styles.odgovorMeta}>
-          <span className={styles.odgovorAutor}>
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-sm font-semibold">
             {odgovor.ocjenjivac.ime} {odgovor.ocjenjivac.prezime}
           </span>
-          <span className={styles.datum}>{formatDatum(odgovor.created_at)}</span>
+          <span className="text-muted-foreground text-xs">{formatDatum(odgovor.created_at)}</span>
           {mojeId === odgovor.ocjenjivac.id && (
-            <button
+            <Button
               type="button"
-              className={styles.linkDanger}
+              variant="link"
+              size="xs"
+              className="text-destructive h-auto p-0 text-xs"
               onClick={() => onDelete(odgovor.id)}
             >
               Obriši
-            </button>
+            </Button>
           )}
         </div>
-        <p className={styles.odgovorTekst}>{odgovor.komentar}</p>
+        <p className="text-muted-foreground text-sm leading-normal whitespace-pre-wrap">
+          {odgovor.komentar}
+        </p>
       </div>
     </li>
   );
@@ -208,16 +206,18 @@ export function RecenzijeSekcija({
   }
 
   return (
-    <div className={styles.wrap}>
+    <div className="flex flex-col gap-6">
       {!loading && (
-        <div className={styles.formArea}>
+        <div className="flex flex-col">
           {!korisnik ? (
-            <p className={styles.prompt}>
-              <AppLink href="/prijava">Prijavite se</AppLink> da biste ostavili
-              recenziju.
+            <p className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
+              <AppLink href="/prijava" className="text-primary font-semibold hover:underline">
+                Prijavite se
+              </AppLink>{" "}
+              da biste ostavili recenziju.
             </p>
           ) : jeVlasnik ? (
-            <p className={styles.prompt}>
+            <p className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
               Ovo je vaša usluga — ne možete je ocijeniti, ali možete odgovoriti
               na recenzije.
             </p>
@@ -234,9 +234,11 @@ export function RecenzijeSekcija({
       )}
 
       {recenzije.length === 0 ? (
-        <p className={styles.empty}>Još nema recenzija za ovu uslugu.</p>
+        <p className="rounded-xl border border-dashed p-12 text-center text-muted-foreground">
+          Još nema recenzija za ovu uslugu.
+        </p>
       ) : (
-        <ul className={styles.lista}>
+        <ul className="flex flex-col gap-4">
           {recenzije.map((r) =>
             mojaRecenzija &&
             r.id === mojaRecenzija.id &&
@@ -259,93 +261,107 @@ export function RecenzijeSekcija({
                 />
               </li>
             ) : (
-              <li key={r.id} className={styles.recenzija}>
-                <div className={styles.recenzijaHeader}>
-                  <Avatar
-                    slika={r.ocjenjivac.profilna_slika}
-                    ime={r.ocjenjivac.ime}
-                    prezime={r.ocjenjivac.prezime}
-                  />
-                  <div className={styles.recenzijaMeta}>
-                    <p className={styles.autor}>
-                      {r.ocjenjivac.ime} {r.ocjenjivac.prezime}
-                    </p>
-                    <p className={styles.datum}>{formatDatum(r.created_at)}</p>
-                  </div>
-                  <StarRating rating={r.ocjena} showCount={false} />
-                </div>
-
-                {r.komentar && <p className={styles.komentar}>{r.komentar}</p>}
-                {r.slika && (
-                  <div className={styles.slika}>
-                    <Image
-                      src={r.slika}
-                      alt=""
-                      fill
-                      sizes="320px"
-                      className={styles.slikaImg}
-                      unoptimized
-                    />
-                  </div>
-                )}
-
-                <div className={styles.recenzijaActions}>
-                  {korisnik && (
-                    <button
-                      type="button"
-                      className={styles.linkBtn}
-                      onClick={() =>
-                        setOdgovorOtvoren((prev) =>
-                          prev === r.id ? null : r.id,
-                        )
-                      }
-                    >
-                      Odgovori
-                    </button>
-                  )}
-                  {mojeId === r.ocjenjivac.id && (
-                    <>
-                      <button
-                        type="button"
-                        className={styles.linkBtn}
-                        onClick={() => setEditujem(true)}
-                      >
-                        Uredi
-                      </button>
-                      <button
-                        type="button"
-                        className={styles.linkDanger}
-                        onClick={() => obrisiRecenziju(r.id)}
-                      >
-                        Obriši
-                      </button>
-                    </>
-                  )}
-                </div>
-
-                {(r.odgovori.length > 0 || odgovorOtvoren === r.id) && (
-                  <ul className={styles.odgovoriLista}>
-                    {r.odgovori.map((o) => (
-                      <Odgovor
-                        key={o.id}
-                        odgovor={o}
-                        mojeId={mojeId}
-                        onDelete={obrisiOdgovor}
+              <li key={r.id}>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="mb-2 flex items-center gap-4">
+                      <ReviewAvatar
+                        slika={r.ocjenjivac.profilna_slika}
+                        ime={r.ocjenjivac.ime}
+                        prezime={r.ocjenjivac.prezime}
                       />
-                    ))}
-                  </ul>
-                )}
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[0.9375rem] font-semibold">
+                          {r.ocjenjivac.ime} {r.ocjenjivac.prezime}
+                        </p>
+                        <p className="text-muted-foreground text-xs">{formatDatum(r.created_at)}</p>
+                      </div>
+                      <StarRating rating={r.ocjena} showCount={false} />
+                    </div>
 
-                {odgovorOtvoren === r.id && korisnik && (
-                  <OdgovorForm
-                    uslugaId={uslugaId}
-                    parentId={r.id}
-                    ocjenjenId={ocjenjenId}
-                    ocjenjivacId={korisnik.id}
-                    onSuccess={osvjezi}
-                    onCancel={() => setOdgovorOtvoren(null)}
-                  />
-                )}
+                    {r.komentar && (
+                      <p className="text-muted-foreground text-[0.9375rem] leading-relaxed whitespace-pre-wrap">
+                        {r.komentar}
+                      </p>
+                    )}
+                    {r.slika && (
+                      <div className="relative mt-4 aspect-[16/10] w-full max-w-xs overflow-hidden rounded-lg">
+                        <Image
+                          src={r.slika}
+                          alt=""
+                          fill
+                          sizes="320px"
+                          className="object-cover"
+                          unoptimized
+                        />
+                      </div>
+                    )}
+
+                    <div className="mt-4 flex flex-wrap gap-4">
+                      {korisnik && (
+                        <Button
+                          type="button"
+                          variant="link"
+                          size="xs"
+                          className="h-auto p-0 text-xs"
+                          onClick={() =>
+                            setOdgovorOtvoren((prev) =>
+                              prev === r.id ? null : r.id,
+                            )
+                          }
+                        >
+                          Odgovori
+                        </Button>
+                      )}
+                      {mojeId === r.ocjenjivac.id && (
+                        <>
+                          <Button
+                            type="button"
+                            variant="link"
+                            size="xs"
+                            className="h-auto p-0 text-xs"
+                            onClick={() => setEditujem(true)}
+                          >
+                            Uredi
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="link"
+                            size="xs"
+                            className="text-destructive h-auto p-0 text-xs"
+                            onClick={() => obrisiRecenziju(r.id)}
+                          >
+                            Obriši
+                          </Button>
+                        </>
+                      )}
+                    </div>
+
+                    {(r.odgovori.length > 0 || odgovorOtvoren === r.id) && (
+                      <ul className="mt-4 flex flex-col gap-2 border-l-2 pl-4">
+                        {r.odgovori.map((o) => (
+                          <Odgovor
+                            key={o.id}
+                            odgovor={o}
+                            mojeId={mojeId}
+                            onDelete={obrisiOdgovor}
+                          />
+                        ))}
+                      </ul>
+                    )}
+
+                    {odgovorOtvoren === r.id && korisnik && (
+                      <OdgovorForm
+                        uslugaId={uslugaId}
+                        parentId={r.id}
+                        ocjenjenId={ocjenjenId}
+                        ocjenjivacId={korisnik.id}
+                        onSuccess={osvjezi}
+                        onCancel={() => setOdgovorOtvoren(null)}
+                      />
+                    )}
+                  </CardContent>
+                </Card>
               </li>
             ),
           )}

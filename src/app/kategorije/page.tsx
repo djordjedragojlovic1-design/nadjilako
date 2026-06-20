@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
+import {
+  PageCard,
+  PageHeader,
+  PageShell,
+} from "@/components/layout/PageShell";
 import { KategorijeBrowser } from "@/components/kategorije/KategorijeBrowser/KategorijeBrowser";
 import { fetchKategorijeStablo } from "@/lib/usluge/queries";
 import type { KategorijaCvor } from "@/lib/usluge/types";
-import styles from "@/styles/page.module.css";
 
 export const metadata: Metadata = {
   title: "Kategorije",
@@ -19,17 +23,17 @@ export default async function KategorijePage() {
   }
 
   return (
-    <div className={styles.page}>
-      <header className={styles.header}>
-        <h1 className={styles.title}>Kategorije usluga</h1>
-      </header>
+    <PageShell>
+      <PageHeader title="Kategorije usluga" />
       {error ? (
-        <section className={styles.card}>
-          <p>Nije moguće učitati kategorije: {error}</p>
-        </section>
+        <PageCard>
+          <p className="text-muted-foreground">
+            Nije moguće učitati kategorije: {error}
+          </p>
+        </PageCard>
       ) : (
         <KategorijeBrowser stablo={stablo} />
       )}
-    </div>
+    </PageShell>
   );
 }

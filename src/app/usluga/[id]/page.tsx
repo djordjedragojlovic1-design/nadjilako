@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { PageCard, PageShell } from "@/components/layout/PageShell";
 import { UslugaDetailView } from "@/components/usluge/UslugaDetail/UslugaDetailView";
 import { getViewerKorisnikId } from "@/lib/korisnik/queries";
 import { fetchRecenzijeZaUslugu, fetchUslugaById } from "@/lib/usluge/queries";
-import styles from "@/styles/page.module.css";
+import { fetchDaLiSacuvano } from "@/lib/sacuvane-objave/queries";
 
 type UslugaPageProps = {
   params: Promise<{ id: string }>;
@@ -36,6 +37,7 @@ export default async function UslugaPage({ params }: UslugaPageProps) {
   let usluga: Awaited<ReturnType<typeof fetchUslugaById>> = null;
   let recenzije: Awaited<ReturnType<typeof fetchRecenzijeZaUslugu>> = [];
   let viewerKorisnikId: number | null = null;
+  let viewerSaved = false;
   let error: string | null = null;
 
   try {
@@ -45,6 +47,9 @@ export default async function UslugaPage({ params }: UslugaPageProps) {
     ]);
     if (usluga) {
       recenzije = await fetchRecenzijeZaUslugu(uslugaId);
+      if (viewerKorisnikId != null && viewerKorisnikId !== usluga.korisnik_id) {
+        viewerSaved = await fetchDaLiSacuvano(viewerKorisnikId, uslugaId);
+      }
     }
   } catch (e) {
     error = e instanceof Error ? e.message : "Greška pri učitavanju.";
@@ -52,11 +57,13 @@ export default async function UslugaPage({ params }: UslugaPageProps) {
 
   if (error) {
     return (
-      <div className={styles.page}>
-        <section className={styles.card}>
-          <p>Nije moguće učitati uslugu: {error}</p>
-        </section>
-      </div>
+      <PageShell>
+        <PageCard>
+          <p className="text-muted-foreground">
+            Nije moguće učitati uslugu: {error}
+          </p>
+        </PageCard>
+      </PageShell>
     );
   }
 
@@ -65,13 +72,14 @@ export default async function UslugaPage({ params }: UslugaPageProps) {
   }
 
   return (
-    <div className={styles.page}>
+    <PageShell>
       <UslugaDetailView
         usluga={usluga}
         recenzije={recenzije}
         isOwner={viewerKorisnikId === usluga.korisnik_id}
         viewerId={viewerKorisnikId}
+        viewerSaved={viewerSaved}
       />
-    </div>
+    </PageShell>
   );
 }

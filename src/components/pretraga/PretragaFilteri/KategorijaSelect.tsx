@@ -1,8 +1,22 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
+import { ChevronDownIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Command,
+  CommandEmpty,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import type { KategorijaFacet } from "@/lib/usluge/types";
-import styles from "./KategorijaSelect.module.css";
 
 type KategorijaSelectProps = {
   kategorije: KategorijaFacet[];
@@ -25,21 +39,9 @@ export function KategorijaSelect({
 }: KategorijaSelectProps) {
   const [open, setOpen] = useState(false);
   const [pretraga, setPretraga] = useState("");
-  const wrapRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const onClick = (e: MouseEvent) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", onClick);
-    return () => document.removeEventListener("mousedown", onClick);
-  }, [open]);
 
   const izabrana = value
-    ? kategorije.find((k) => k.slug === value)?.naziv ?? "Kategorija"
+    ? (kategorije.find((k) => k.slug === value)?.naziv ?? "Kategorija")
     : null;
 
   const filtrirane = useMemo(() => {
@@ -55,68 +57,63 @@ export function KategorijaSelect({
   };
 
   return (
-    <div className={styles.wrap} ref={wrapRef}>
-      <button
-        type="button"
-        className={styles.trigger}
-        onClick={() => setOpen((v) => !v)}
-        aria-haspopup="listbox"
-        aria-expanded={open}
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger
+        render={
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className="w-full justify-between font-normal"
+          />
+        }
       >
-        <span className={izabrana ? styles.triggerValue : styles.triggerPlaceholder}>
+        <span
+          className={cn(
+            "truncate",
+            izabrana ? "font-semibold" : "text-muted-foreground",
+          )}
+        >
           {izabrana ?? "Sve kategorije"}
         </span>
-        <svg className={styles.caret} viewBox="0 0 24 24" fill="none" aria-hidden>
-          <path
-            d="M6 9l6 6 6-6"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </button>
-
-      {open && (
-        <div className={styles.panel}>
-          <input
-            type="search"
-            className={styles.search}
+        <ChevronDownIcon className="size-4 shrink-0 opacity-50" />
+      </PopoverTrigger>
+      <PopoverContent className="w-(--anchor-width) p-0" align="start">
+        <Command shouldFilter={false}>
+          <CommandInput
             placeholder="Pretraži kategorije..."
             value={pretraga}
-            onChange={(e) => setPretraga(e.target.value)}
-            autoFocus
+            onValueChange={setPretraga}
           />
-          <ul className={styles.list} role="listbox">
-            <li>
-              <button
-                type="button"
-                className={`${styles.option} ${value === null ? styles.optionActive : ""}`}
-                onClick={() => izaberi(null)}
-              >
-                Sve kategorije
-              </button>
-            </li>
+          <CommandList className="max-h-72">
+            <CommandEmpty>Nema rezultata</CommandEmpty>
+            <CommandItem
+              value="__all__"
+              data-checked={value === null}
+              onSelect={() => izaberi(null)}
+            >
+              Sve kategorije
+            </CommandItem>
             {filtrirane.map((k) => (
-              <li key={k.slug}>
-                <button
-                  type="button"
-                  className={`${styles.option} ${
-                    k.parentNaziv ? styles.optionChild : styles.optionParent
-                  } ${k.slug === value ? styles.optionActive : ""}`}
-                  onClick={() => izaberi(k.slug)}
-                >
-                  <span className={styles.optionNaziv}>{k.naziv}</span>
-                  <span className={styles.optionCount}>{k.count}</span>
-                </button>
-              </li>
+              <CommandItem
+                key={k.slug}
+                value={k.slug}
+                data-checked={k.slug === value}
+                className={cn(
+                  "justify-between",
+                  k.parentNaziv ? "pl-6" : "font-bold",
+                )}
+                onSelect={() => izaberi(k.slug)}
+              >
+                <span className="min-w-0 truncate">{k.naziv}</span>
+                <span className="text-muted-foreground shrink-0 text-xs font-semibold">
+                  {k.count}
+                </span>
+              </CommandItem>
             ))}
-            {filtrirane.length === 0 && (
-              <li className={styles.prazno}>Nema rezultata</li>
-            )}
-          </ul>
-        </div>
-      )}
-    </div>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 }

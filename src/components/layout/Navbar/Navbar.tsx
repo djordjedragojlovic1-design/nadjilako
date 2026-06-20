@@ -1,16 +1,41 @@
 "use client";
 
-import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import {
+  Coins,
+  Menu,
+  MessageCircle,
+  Moon,
+  Search,
+  Sun,
+  X,
+} from "lucide-react";
 import { AppLink } from "@/components/ui/AppLink";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useTheme } from "@/components/providers/ThemeProvider";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button, buttonVariants } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { signOutClient } from "@/lib/auth/client-actions";
 import { getInitials } from "@/lib/auth/korisnik";
 import { fetchUnreadCount } from "@/lib/chat/client";
 import { createClient } from "@/lib/supabase/client";
-import styles from "./Navbar.module.css";
+import { cn } from "@/lib/utils";
 
 function useUnreadPoruke(korisnikId: number | null, pathname: string): number {
   const [count, setCount] = useState(0);
@@ -60,54 +85,6 @@ const NAV_LINKS = [
   { href: "/pretraga", label: "Pretraga" },
 ] as const;
 
-function SearchIcon() {
-  return (
-    <svg className={styles.searchIcon} viewBox="0 0 24 24" fill="none" aria-hidden>
-      <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
-      <path d="M20 20l-3-3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function ThemeIcon({ theme }: { theme: "light" | "dark" }) {
-  if (theme === "dark") {
-    return (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
-        <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="2" />
-        <path
-          d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-        />
-      </svg>
-    );
-  }
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path
-        d="M21 14.5A8.5 8.5 0 1111.5 4 6.5 6.5 0 0021 14.5z"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function ChatIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path
-        d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
 function SearchField({
   className,
   onSubmit,
@@ -129,12 +106,15 @@ function SearchField({
   };
 
   return (
-    <form className={`${styles.searchForm} ${className ?? ""}`} onSubmit={handleSubmit}>
-      <SearchIcon />
-      <input
+    <form className={cn("relative", className)} onSubmit={handleSubmit}>
+      <Search
+        className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"
+        aria-hidden
+      />
+      <Input
         type="search"
         name="q"
-        className={styles.searchInput}
+        className="bg-muted rounded-full pl-9"
         placeholder="Pretraži usluge..."
         aria-label="Pretraga usluga"
       />
@@ -142,22 +122,35 @@ function SearchField({
   );
 }
 
-function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
+function NavLinks({
+  onNavigate,
+  className,
+  linkClassName,
+}: {
+  onNavigate?: () => void;
+  className?: string;
+  linkClassName?: string;
+}) {
   const pathname = usePathname();
 
   return (
-    <>
+    <nav className={className} aria-label="Glavna navigacija">
       {NAV_LINKS.map(({ href, label }) => (
         <AppLink
           key={href}
           href={href}
-          className={`${styles.navLink} ${pathname === href ? styles.navLinkActive : ""}`}
+          className={cn(
+            buttonVariants({ variant: "ghost", size: "sm" }),
+            "text-muted-foreground",
+            pathname === href && "bg-accent text-accent-foreground",
+            linkClassName,
+          )}
           onClick={onNavigate}
         >
           {label}
         </AppLink>
       ))}
-    </>
+    </nav>
   );
 }
 
@@ -173,25 +166,9 @@ function UserMenu({
   onClose?: () => void;
 }) {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!open) return;
-    const handleClick = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, [open]);
-
-  const close = () => {
-    setOpen(false);
-    onClose?.();
-  };
+  const close = () => onClose?.();
 
   const handleSignOut = async () => {
     setSigningOut(true);
@@ -202,74 +179,49 @@ function UserMenu({
   };
 
   return (
-    <div className={styles.userMenuWrap} ref={ref}>
-      <button
-        type="button"
-        className={styles.avatarBtn}
-        onClick={() => setOpen((o) => !o)}
-        aria-expanded={open}
-        aria-haspopup="menu"
-        aria-label="Korisnički meni"
-      >
-        {avatarUrl ? (
-          <Image
-            src={avatarUrl}
-            alt=""
-            width={36}
-            height={36}
-            className={styles.avatarImg}
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-9 rounded-full p-0"
+            aria-label="Korisnički meni"
           />
-        ) : (
-          initials
-        )}
-      </button>
-      {open && (
-        <div className={styles.dropdown} role="menu">
-          <AppLink
-            href={profilHref}
-            className={styles.dropdownItem}
-            role="menuitem"
-            onClick={close}
-          >
-            Profil
-          </AppLink>
-          <AppLink
-            href="/uredi-profil"
-            className={styles.dropdownItem}
-            role="menuitem"
-            onClick={close}
-          >
-            Uredi profil
-          </AppLink>
-          <AppLink
-            href="/krediti"
-            className={styles.dropdownItem}
-            role="menuitem"
-            onClick={close}
-          >
-            Krediti
-          </AppLink>
-          <AppLink
-            href="/verifikacija"
-            className={styles.dropdownItem}
-            role="menuitem"
-            onClick={close}
-          >
-            Verifikacija
-          </AppLink>
-          <div className={styles.dropdownDivider} />
-          <button
-            type="button"
-            className={`${styles.dropdownItem} ${styles.dropdownDanger}`}
-            role="menuitem"
-            disabled={signingOut}
-            onClick={handleSignOut}
-          >
-            {signingOut ? "Odjava..." : "Odjavi se"}
-          </button>
-        </div>
-      )}
-    </div>
+        }
+      >
+        <Avatar className="size-9">
+          {avatarUrl ? (
+            <AvatarImage src={avatarUrl} alt="" />
+          ) : null}
+          <AvatarFallback className="bg-primary text-primary-foreground text-xs font-bold">
+            {initials}
+          </AvatarFallback>
+        </Avatar>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-44">
+        <DropdownMenuItem onClick={() => { close(); router.push(profilHref); }}>
+          Profil
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => { close(); router.push("/uredi-profil"); }}>
+          Uredi profil
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => { close(); router.push("/krediti"); }}>
+          Krediti
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => { close(); router.push("/verifikacija"); }}>
+          Verifikacija
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          variant="destructive"
+          disabled={signingOut}
+          onClick={handleSignOut}
+        >
+          {signingOut ? "Odjava..." : "Odjavi se"}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
@@ -296,66 +248,73 @@ export function Navbar() {
     setMenuOpen(false);
   }, [pathname]);
 
-  useEffect(() => {
-    document.body.style.overflow = menuOpen ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [menuOpen]);
-
   return (
-    <header className={styles.header}>
-      <div className={styles.inner}>
-        <AppLink href="/" className={styles.logo}>
-          <span className={styles.logoMark}>NL</span>
+    <header className="bg-background h-16 border-b shadow-sm">
+      <div className="mx-auto flex h-full max-w-6xl items-center gap-4 px-4">
+        <AppLink
+          href="/"
+          className="flex shrink-0 items-center gap-2 text-lg font-bold tracking-tight transition-colors hover:text-primary"
+        >
+          <span className="bg-primary flex size-8 items-center justify-center rounded-md text-sm font-extrabold text-white dark:text-black">
+            NL
+          </span>
           <span>NadjiLako</span>
         </AppLink>
 
-        <nav className={styles.nav} aria-label="Glavna navigacija">
-          <NavLinks />
-        </nav>
+        <NavLinks className="hidden items-center gap-0.5 min-[901px]:flex" />
 
-        <div className={styles.searchWrap}>
+        <div className="mx-auto hidden max-w-md flex-1 min-[901px]:block">
           <SearchField />
         </div>
 
-        <div className={styles.actions}>
-          <button
+        <div className="ml-auto flex shrink-0 items-center gap-1">
+          <Button
             type="button"
-            className={styles.themeBtn}
+            variant="ghost"
+            size="icon"
             onClick={toggleTheme}
             aria-label={theme === "light" ? "Uključi tamni mod" : "Uključi svetli mod"}
           >
-            <ThemeIcon theme={theme} />
-          </button>
+            {theme === "dark" ? <Sun className="size-5" /> : <Moon className="size-5" />}
+          </Button>
 
           {loading ? (
-            <span className={styles.authSkeleton} aria-hidden />
+            <div
+              className="bg-muted h-9 w-32 animate-pulse rounded-md"
+              aria-hidden
+            />
           ) : isLoggedIn ? (
-            <div className={styles.userArea}>
-              <AppLink href="/krediti" className={styles.credits} aria-label="Krediti">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
-                  <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" />
-                  <path
-                    d="M12 7v10M9 10h6M9 14h6"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                </svg>
+            <div className="flex items-center gap-1">
+              <AppLink
+                href="/krediti"
+                className={cn(
+                  buttonVariants({ variant: "secondary", size: "sm" }),
+                  "hidden gap-1.5 rounded-full sm:inline-flex",
+                )}
+                aria-label="Krediti"
+              >
+                <Coins className="size-4" />
                 <span>{korisnik?.krediti ?? 0}</span>
-                <span>kredita</span>
+                <span className="max-[480px]:hidden">kredita</span>
               </AppLink>
-              <span className={styles.chatLinkWrap}>
-                <AppLink href="/chat" className={styles.iconBtn} aria-label="Poruke">
-                  <ChatIcon />
+              <div className="relative">
+                <AppLink
+                  href="/chat"
+                  className={buttonVariants({ variant: "ghost", size: "icon" })}
+                  aria-label="Poruke"
+                >
+                  <MessageCircle className="size-5" />
                 </AppLink>
                 {unread > 0 && (
-                  <span className={styles.chatBadge} aria-label={`${unread} nepročitanih`}>
+                  <Badge
+                    variant="destructive"
+                    className="pointer-events-none absolute -top-1 -right-1 size-4 justify-center p-0 text-[0.65rem]"
+                    aria-label={`${unread} nepročitanih`}
+                  >
                     {unread > 99 ? "99+" : unread}
-                  </span>
+                  </Badge>
                 )}
-              </span>
+              </div>
               <UserMenu
                 profilHref={profilHref}
                 initials={initials}
@@ -363,71 +322,69 @@ export function Navbar() {
               />
             </div>
           ) : (
-            <div className={styles.authBtns}>
-              <AppLink href="/prijava" className={styles.btnGhost}>
+            <div className="hidden items-center gap-1 min-[901px]:flex">
+              <AppLink
+                href="/prijava"
+                className={buttonVariants({ variant: "ghost", size: "sm" })}
+              >
                 Prijava
               </AppLink>
-              <AppLink href="/registracija" className={styles.btnPrimary}>
+              <AppLink
+                href="/registracija"
+                className={buttonVariants({ size: "sm" })}
+              >
                 Registracija
               </AppLink>
             </div>
           )}
 
-          <button
+          <Button
             type="button"
-            className={styles.menuToggle}
+            variant="ghost"
+            size="icon"
+            className="min-[901px]:hidden"
             onClick={() => setMenuOpen((o) => !o)}
             aria-expanded={menuOpen}
             aria-label={menuOpen ? "Zatvori meni" : "Otvori meni"}
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
-              {menuOpen ? (
-                <path
-                  d="M6 6l12 12M18 6L6 18"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-              ) : (
-                <path
-                  d="M4 7h16M4 12h16M4 17h16"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-              )}
-            </svg>
-          </button>
+            {menuOpen ? <X className="size-6" /> : <Menu className="size-6" />}
+          </Button>
         </div>
       </div>
 
-      <div
-        className={`${styles.overlay} ${menuOpen ? styles.overlayVisible : ""}`}
-        onClick={closeMobile}
-        aria-hidden
-      />
-
-      <div
-        className={`${styles.mobilePanel} ${menuOpen ? styles.mobilePanelOpen : ""}`}
-        aria-hidden={!menuOpen}
-      >
-        <nav className={styles.mobileNav} aria-label="Mobilna navigacija">
-          <NavLinks onNavigate={closeMobile} />
-        </nav>
-        <div className={styles.mobileSearch}>
-          <SearchField onSubmit={closeMobile} />
-        </div>
-        {!loading && !isLoggedIn && (
-          <div className={styles.mobileAuth}>
-            <AppLink href="/prijava" className={styles.btnGhost} onClick={closeMobile}>
-              Prijava
-            </AppLink>
-            <AppLink href="/registracija" className={styles.btnPrimary} onClick={closeMobile}>
-              Registracija
-            </AppLink>
+      <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+        <SheetContent side="right" className="w-full sm:max-w-sm">
+          <SheetHeader>
+            <SheetTitle>Navigacija</SheetTitle>
+          </SheetHeader>
+          <div className="flex flex-col gap-6 px-4">
+            <NavLinks
+              className="flex flex-col items-stretch gap-1"
+              linkClassName="justify-start px-3 py-2.5 text-base"
+              onNavigate={closeMobile}
+            />
+            <SearchField onSubmit={closeMobile} />
+            {!loading && !isLoggedIn && (
+              <div className="flex flex-col gap-2 border-t pt-4">
+                <AppLink
+                  href="/prijava"
+                  className={cn(buttonVariants({ variant: "outline" }), "w-full")}
+                  onClick={closeMobile}
+                >
+                  Prijava
+                </AppLink>
+                <AppLink
+                  href="/registracija"
+                  className={cn(buttonVariants(), "w-full")}
+                  onClick={closeMobile}
+                >
+                  Registracija
+                </AppLink>
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </SheetContent>
+      </Sheet>
     </header>
   );
 }

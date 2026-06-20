@@ -3,15 +3,26 @@
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { AppLink } from "@/components/ui/AppLink";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { signUpClient } from "@/lib/auth/client-actions";
 import { DRZAVE } from "@/types/database";
-import authStyles from "./auth.module.css";
 
 export function RegisterForm() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [drzava, setDrzava] = useState("");
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -39,51 +50,37 @@ export function RegisterForm() {
   }
 
   return (
-    <form className={authStyles.form} onSubmit={handleSubmit}>
-      {error && (
-        <p className={`${authStyles.alert} ${authStyles.alertError}`} role="alert">
-          {error}
-        </p>
-      )}
-      {success && (
-        <p className={`${authStyles.alert} ${authStyles.alertSuccess}`} role="status">
-          {success}
-        </p>
-      )}
+    <form className="space-y-4" onSubmit={handleSubmit}>
+      {error ? (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      ) : null}
+      {success ? (
+        <Alert role="status">
+          <AlertDescription>{success}</AlertDescription>
+        </Alert>
+      ) : null}
 
-      <div className={authStyles.field}>
-        <label className={authStyles.label} htmlFor="ime">
-          Ime
-        </label>
-        <input
-          id="ime"
-          name="ime"
-          type="text"
-          autoComplete="given-name"
-          required
-          className={authStyles.input}
-        />
+      <div className="space-y-2">
+        <Label htmlFor="ime">Ime</Label>
+        <Input id="ime" name="ime" type="text" autoComplete="given-name" required />
       </div>
 
-      <div className={authStyles.field}>
-        <label className={authStyles.label} htmlFor="prezime">
-          Prezime
-        </label>
-        <input
+      <div className="space-y-2">
+        <Label htmlFor="prezime">Prezime</Label>
+        <Input
           id="prezime"
           name="prezime"
           type="text"
           autoComplete="family-name"
           required
-          className={authStyles.input}
         />
       </div>
 
-      <div className={authStyles.field}>
-        <label className={authStyles.label} htmlFor="korisnicko_ime">
-          Korisničko ime
-        </label>
-        <input
+      <div className="space-y-2">
+        <Label htmlFor="korisnicko_ime">Korisničko ime</Label>
+        <Input
           id="korisnicko_ime"
           name="korisnicko_ime"
           type="text"
@@ -92,62 +89,53 @@ export function RegisterForm() {
           minLength={3}
           maxLength={30}
           pattern="[a-zA-Z0-9_.-]+"
-          className={authStyles.input}
           placeholder="npr. marko123"
         />
       </div>
 
-      <div className={authStyles.field}>
-        <label className={authStyles.label} htmlFor="email">
-          Email
-        </label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          autoComplete="email"
-          required
-          className={authStyles.input}
-        />
+      <div className="space-y-2">
+        <Label htmlFor="email">Email</Label>
+        <Input id="email" name="email" type="email" autoComplete="email" required />
       </div>
 
-      <div className={authStyles.field}>
-        <label className={authStyles.label} htmlFor="lozinka">
-          Lozinka
-        </label>
-        <input
+      <div className="space-y-2">
+        <Label htmlFor="lozinka">Lozinka</Label>
+        <Input
           id="lozinka"
           name="lozinka"
           type="password"
           autoComplete="new-password"
           required
           minLength={6}
-          className={authStyles.input}
         />
       </div>
 
-      <div className={authStyles.field}>
-        <label className={authStyles.label} htmlFor="drzava">
-          Država
-        </label>
-        <select id="drzava" name="drzava" required className={authStyles.select} defaultValue="">
-          <option value="" disabled>
-            Izaberite državu
-          </option>
-          {DRZAVE.map((drzava) => (
-            <option key={drzava} value={drzava}>
-              {drzava}
-            </option>
-          ))}
-        </select>
+      <div className="space-y-2">
+        <Label htmlFor="drzava">Država</Label>
+        <input type="hidden" name="drzava" value={drzava} required />
+        <Select value={drzava} onValueChange={(value) => setDrzava(value ?? "")}>
+          <SelectTrigger id="drzava" className="w-full">
+            <SelectValue placeholder="Izaberite državu" />
+          </SelectTrigger>
+          <SelectContent>
+            {DRZAVE.map((item) => (
+              <SelectItem key={item} value={item}>
+                {item}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
-      <button type="submit" className={authStyles.submit} disabled={pending}>
+      <Button type="submit" className="w-full" disabled={pending}>
         {pending ? "Registracija..." : "Registruj se"}
-      </button>
+      </Button>
 
-      <p className={authStyles.footer}>
-        Već imate nalog? <AppLink href="/prijava">Prijavite se</AppLink>
+      <p className="text-muted-foreground text-center text-sm">
+        Već imate nalog?{" "}
+        <AppLink href="/prijava" className="text-primary font-semibold hover:underline">
+          Prijavite se
+        </AppLink>
       </p>
     </form>
   );

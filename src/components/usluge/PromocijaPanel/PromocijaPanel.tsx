@@ -4,6 +4,16 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { AppLink } from "@/components/ui/AppLink";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { PromocijaPotvrdaDialog } from "@/components/usluge/PromocijaPotvrdaDialog/PromocijaPotvrdaDialog";
 import { promovisiUsluguClient } from "@/lib/krediti/client";
 import {
@@ -21,7 +31,7 @@ import {
   promoDugmeLabel,
   upgradeHint,
 } from "@/lib/krediti/promocija";
-import styles from "./PromocijaPanel.module.css";
+import { cn } from "@/lib/utils";
 
 type PromocijaPanelProps = {
   uslugaId: number;
@@ -105,97 +115,106 @@ export function PromocijaPanel({
 
   return (
     <>
-      <div className={styles.panel}>
-        <div className={styles.head}>
-          <h2 className={styles.title}>Promocija usluge</h2>
-          <span className={styles.saldo}>{krediti} kredita</span>
-        </div>
+      <Card>
+        <CardHeader className="flex-row items-center justify-between space-y-0">
+          <CardTitle>Promocija usluge</CardTitle>
+          <Badge variant="secondary" className="text-primary bg-primary/10">
+            {krediti} kredita
+          </Badge>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4">
+          {aktivna ? (
+            <>
+              <p className="text-sm">
+                Trenutno aktivno: <strong>{PROMO_LABELS[aktivna]}</strong>
+                {promovisanoDo && <> — do {formatDatum(promovisanoDo)}</>}
+              </p>
+              <CardDescription>
+                {aktivna === "izdvojeno"
+                  ? upgradeHint(promovisanoOd)
+                  : "Nova promocija moguća je tek nakon isteka trenutne."}
+              </CardDescription>
+            </>
+          ) : (
+            <p className="text-muted-foreground text-sm">Usluga trenutno nije promovisana.</p>
+          )}
 
-        {aktivna ? (
-          <>
-            <p className={styles.statusActive}>
-              Trenutno aktivno: <strong>{PROMO_LABELS[aktivna]}</strong>
-              {promovisanoDo && <> — do {formatDatum(promovisanoDo)}</>}
-            </p>
-            <p className={styles.statusHint}>
-              {aktivna === "izdvojeno"
-                ? upgradeHint(promovisanoOd)
-                : "Nova promocija moguća je tek nakon isteka trenutne."}
-            </p>
-          </>
-        ) : (
-          <p className={styles.statusInactive}>Usluga trenutno nije promovisana.</p>
-        )}
-
-        {greska && (
-          <p className={`${styles.alert} ${styles.alertError}`} role="alert">
-            {greska}
-            {greska.toLowerCase().includes("kredita") && (
-              <>
-                {" "}
-                <AppLink href="/krediti" className={styles.link}>
-                  Dopuni kredite
-                </AppLink>
-              </>
-            )}
-          </p>
-        )}
-        {poruka && (
-          <p className={`${styles.alert} ${styles.alertSuccess}`} role="status">
-            {poruka}
-          </p>
-        )}
-
-        <div className={styles.opcije}>
-          {PROMO_TIPOVI.map((tip) => {
-            const ponuda = getPromoPonuda(
-              aktivna,
-              tip,
-              promovisanoOd,
-              promovisanoDo,
-            );
-            const dozvoljeno = mozePromovisati(ponuda);
-            const cijena = dozvoljeno ? ponuda.ukupno : PROMO_CIJENE[tip];
-            const nedovoljno = dozvoljeno && krediti < cijena;
-
-            return (
-              <div
-                key={tip}
-                className={`${styles.opcija} ${!dozvoljeno ? styles.opcijaBlokirana : ""}`}
-              >
-                <div className={styles.opcijaHead}>
-                  <span className={styles.opcijaNaziv}>{PROMO_LABELS[tip]}</span>
-                  <span className={styles.opcijaCijena}>
-                    {dozvoljeno && ponuda.akcija === "upgrade"
-                      ? `${cijena} kredita (nadogradnja)`
-                      : `${cijena} kredita`}
-                  </span>
-                </div>
-                <p className={styles.opcijaOpis}>{PROMO_OPIS[tip]}</p>
-                <button
-                  type="button"
-                  className={styles.promoBtn}
-                  onClick={() => otvoriPotvrdu(tip)}
-                  disabled={pending || !dozvoljeno || nedovoljno}
-                >
-                  {promoDugmeLabel(ponuda)}
-                </button>
-                {!dozvoljeno && ponuda.razlogBlokade && (
-                  <span className={styles.nedovoljno}>{ponuda.razlogBlokade}</span>
-                )}
-                {dozvoljeno && nedovoljno && (
-                  <span className={styles.nedovoljno}>
-                    Nedovoljno kredita —{" "}
-                    <AppLink href="/krediti" className={styles.link}>
-                      dopuni
+          {greska && (
+            <Alert variant="destructive">
+              <AlertDescription>
+                {greska}
+                {greska.toLowerCase().includes("kredita") && (
+                  <>
+                    {" "}
+                    <AppLink href="/krediti" className="font-semibold underline">
+                      Dopuni kredite
                     </AppLink>
-                  </span>
+                  </>
                 )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
+              </AlertDescription>
+            </Alert>
+          )}
+          {poruka && (
+            <Alert>
+              <AlertDescription>{poruka}</AlertDescription>
+            </Alert>
+          )}
+
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(13rem,1fr))] gap-4">
+            {PROMO_TIPOVI.map((tip) => {
+              const ponuda = getPromoPonuda(
+                aktivna,
+                tip,
+                promovisanoOd,
+                promovisanoDo,
+              );
+              const dozvoljeno = mozePromovisati(ponuda);
+              const cijena = dozvoljeno ? ponuda.ukupno : PROMO_CIJENE[tip];
+              const nedovoljno = dozvoljeno && krediti < cijena;
+
+              return (
+                <Card
+                  key={tip}
+                  size="sm"
+                  className={cn(!dozvoljeno && "opacity-70")}
+                >
+                  <CardContent className="flex flex-col gap-2 pt-4">
+                    <div className="flex items-baseline justify-between gap-2">
+                      <span className="font-bold">{PROMO_LABELS[tip]}</span>
+                      <span className="text-primary shrink-0 text-sm font-semibold whitespace-nowrap">
+                        {dozvoljeno && ponuda.akcija === "upgrade"
+                          ? `${cijena} kredita (nadogradnja)`
+                          : `${cijena} kredita`}
+                      </span>
+                    </div>
+                    <p className="text-muted-foreground flex-1 text-[0.8125rem]">
+                      {PROMO_OPIS[tip]}
+                    </p>
+                    <Button
+                      type="button"
+                      onClick={() => otvoriPotvrdu(tip)}
+                      disabled={pending || !dozvoljeno || nedovoljno}
+                    >
+                      {promoDugmeLabel(ponuda)}
+                    </Button>
+                    {!dozvoljeno && ponuda.razlogBlokade && (
+                      <span className="text-muted-foreground text-xs">{ponuda.razlogBlokade}</span>
+                    )}
+                    {dozvoljeno && nedovoljno && (
+                      <span className="text-muted-foreground text-xs">
+                        Nedovoljno kredita —{" "}
+                        <AppLink href="/krediti" className="text-primary font-semibold hover:underline">
+                          dopuni
+                        </AppLink>
+                      </span>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
 
       {potvrdaPonuda && potvrdaTip && (
         <PromocijaPotvrdaDialog

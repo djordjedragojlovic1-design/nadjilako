@@ -2,10 +2,14 @@
 
 import { useState } from "react";
 import { AppLink } from "@/components/ui/AppLink";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import { mapAuthError } from "@/lib/auth/messages";
+import { getSiteOrigin } from "@/lib/auth/site-url";
 import { createClient } from "@/lib/supabase/client";
-import authStyles from "@/components/auth/auth.module.css";
-import styles from "./VerifikacijaPanel.module.css";
+import { cn } from "@/lib/utils";
 
 type VerifikacijaPanelProps = {
   korisnikId: number;
@@ -17,13 +21,17 @@ type VerifikacijaPanelProps = {
 
 function StatusBadge({ verifikovan }: { verifikovan: boolean }) {
   return (
-    <span
-      className={`${styles.badge} ${
-        verifikovan ? styles.badgeOk : styles.badgePending
-      }`}
+    <Badge
+      variant="outline"
+      className={cn(
+        "shrink-0 font-bold",
+        verifikovan
+          ? "border-emerald-500/35 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+          : "border-destructive/35 bg-destructive/10 text-destructive",
+      )}
     >
       {verifikovan ? "Verifikovano" : "Nije verifikovano"}
-    </span>
+    </Badge>
   );
 }
 
@@ -33,7 +41,6 @@ export function VerifikacijaPanel({
   brojTelefona,
   telefonVerifikovan,
 }: VerifikacijaPanelProps) {
-  // Email
   const [emailPending, setEmailPending] = useState(false);
   const [emailPoruka, setEmailPoruka] = useState<string | null>(null);
   const [emailGreska, setEmailGreska] = useState<string | null>(null);
@@ -44,7 +51,7 @@ export function VerifikacijaPanel({
     setEmailGreska(null);
 
     const supabase = createClient();
-    const origin = process.env.NEXT_PUBLIC_SITE_URL ?? window.location.origin;
+    const origin = getSiteOrigin(window.location.origin);
 
     const { error } = await supabase.auth.resend({
       type: "signup",
@@ -63,56 +70,57 @@ export function VerifikacijaPanel({
   }
 
   return (
-    <div className={styles.wrap}>
-      {/* ─── Email ─── */}
-      <div className={styles.section}>
-        <div className={styles.sectionHead}>
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4">
+        <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className={styles.sectionTitle}>Email adresa</h2>
-            <p className={styles.sectionValue}>{email || "—"}</p>
+            <h2 className="text-base font-bold">Email adresa</h2>
+            <p className="text-muted-foreground mt-1 break-all text-sm">
+              {email || "—"}
+            </p>
           </div>
           <StatusBadge verifikovan={emailVerifikovan} />
         </div>
 
         {emailGreska && (
-          <p
-            className={`${authStyles.alert} ${authStyles.alertError}`}
-            role="alert"
-          >
-            {emailGreska}
-          </p>
+          <Alert variant="destructive" role="alert">
+            <AlertDescription>{emailGreska}</AlertDescription>
+          </Alert>
         )}
         {emailPoruka && (
-          <p
-            className={`${authStyles.alert} ${authStyles.alertSuccess}`}
+          <Alert
+            className="border-emerald-500/35 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
             role="status"
           >
-            {emailPoruka}
-          </p>
+            <AlertDescription>{emailPoruka}</AlertDescription>
+          </Alert>
         )}
 
         {emailVerifikovan ? (
-          <p className={styles.hint}>Vaša email adresa je potvrđena.</p>
+          <p className="text-muted-foreground text-sm">
+            Vaša email adresa je potvrđena.
+          </p>
         ) : (
-          <button
+          <Button
             type="button"
-            className={styles.actionBtn}
+            className="self-start"
             onClick={posaljiEmailPonovo}
             disabled={emailPending}
           >
             {emailPending ? "Slanje..." : "Pošalji verifikacioni email"}
-          </button>
+          </Button>
         )}
       </div>
 
-      <hr className={styles.divider} />
+      <Separator />
 
-      {/* ─── Telefon ─── */}
-      <div className={styles.section}>
-        <div className={styles.sectionHead}>
+      <div className="flex flex-col gap-4">
+        <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className={styles.sectionTitle}>Broj telefona</h2>
-            <p className={styles.sectionValue}>{brojTelefona || "—"}</p>
+            <h2 className="text-base font-bold">Broj telefona</h2>
+            <p className="text-muted-foreground mt-1 break-all text-sm">
+              {brojTelefona || "—"}
+            </p>
           </div>
           {brojTelefona && telefonVerifikovan && (
             <StatusBadge verifikovan />
@@ -120,25 +128,35 @@ export function VerifikacijaPanel({
         </div>
 
         {!brojTelefona ? (
-          <p className={styles.hint}>
+          <p className="text-muted-foreground text-sm">
             Niste unijeli broj telefona. Dodajte ga na stranici{" "}
-            <AppLink href="/uredi-profil" className={styles.link}>
+            <AppLink
+              href="/uredi-profil"
+              className="text-primary font-semibold hover:underline"
+            >
               Uredi profil
             </AppLink>
             .
           </p>
         ) : telefonVerifikovan ? (
-          <p className={styles.hint}>Vaš broj telefona je potvrđen.</p>
+          <p className="text-muted-foreground text-sm">
+            Vaš broj telefona je potvrđen.
+          </p>
         ) : (
-          <p className={styles.hint}>
+          <p className="text-muted-foreground text-sm">
             Verifikacija broja telefona trenutno nije moguća u ovoj fazi.
             Uvešćemo je naknadno.
           </p>
         )}
       </div>
 
-      <p className={authStyles.footer}>
-        <AppLink href="/uredi-profil">Nazad na uređivanje profila</AppLink>
+      <p className="text-muted-foreground text-center text-sm">
+        <AppLink
+          href="/uredi-profil"
+          className="text-primary font-semibold hover:underline"
+        >
+          Nazad na uređivanje profila
+        </AppLink>
       </p>
     </div>
   );

@@ -1,10 +1,8 @@
-import styles from "@/components/chat/Chat.module.css";
-
 export default function ChatPage() {
   return (
-    <div className={styles.placeholder}>
+    <div className="flex flex-1 flex-col items-center justify-center gap-2 p-12 text-center text-muted-foreground">
       <svg
-        className={styles.placeholderIcon}
+        className="text-border"
         width="64"
         height="64"
         viewBox="0 0 24 24"

@@ -21,6 +21,10 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 const STORAGE_KEY = "nadjilako-theme";
 
+function applyTheme(theme: Theme) {
+  document.documentElement.classList.toggle("dark", theme === "dark");
+}
+
 function getInitialTheme(): Theme {
   if (typeof window === "undefined") return "light";
   const stored = localStorage.getItem(STORAGE_KEY) as Theme | null;
@@ -37,13 +41,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const initial = getInitialTheme();
     setThemeState(initial);
-    document.documentElement.setAttribute("data-theme", initial);
+    applyTheme(initial);
     setMounted(true);
   }, []);
 
   const setTheme = useCallback((next: Theme) => {
     setThemeState(next);
-    document.documentElement.setAttribute("data-theme", next);
+    applyTheme(next);
     localStorage.setItem(STORAGE_KEY, next);
   }, []);
 

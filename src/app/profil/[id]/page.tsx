@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { PageCard, PageShell } from "@/components/layout/PageShell";
 import { ProfilView } from "@/components/profil/ProfilView";
 import {
   fetchKorisnikById,
@@ -10,7 +11,7 @@ import {
   fetchKorisnikReviewStats,
   fetchUslugeByKorisnikId,
 } from "@/lib/usluge/queries";
-import styles from "@/styles/page.module.css";
+import { fetchBrojPratilaca, fetchDaLiPrati } from "@/lib/pratioci/queries";
 
 type ProfilPageProps = {
   params: Promise<{ id: string }>;
@@ -49,26 +50,36 @@ export default async function ProfilPage({ params }: ProfilPageProps) {
     prosecnaOcjena: 0,
     brojRecenzija: 0,
   };
+  let brojPratilaca = 0;
+  let viewerPrati = false;
   let error: string | null = null;
 
   try {
-    [korisnik, usluge, viewerId, reviewStats] = await Promise.all([
-      fetchKorisnikById(profilId),
-      fetchUslugeByKorisnikId(profilId),
-      getViewerKorisnikId(),
-      fetchKorisnikReviewStats(profilId),
-    ]);
+    [korisnik, usluge, viewerId, reviewStats, brojPratilaca] =
+      await Promise.all([
+        fetchKorisnikById(profilId),
+        fetchUslugeByKorisnikId(profilId),
+        getViewerKorisnikId(),
+        fetchKorisnikReviewStats(profilId),
+        fetchBrojPratilaca(profilId),
+      ]);
+
+    if (viewerId != null && viewerId !== profilId) {
+      viewerPrati = await fetchDaLiPrati(viewerId, profilId);
+    }
   } catch (e) {
     error = e instanceof Error ? e.message : "Greška pri učitavanju profila.";
   }
 
   if (error) {
     return (
-      <div className={styles.page}>
-        <section className={styles.card}>
-          <p>Nije moguće učitati profil: {error}</p>
-        </section>
-      </div>
+      <PageShell>
+        <PageCard>
+          <p className="text-muted-foreground">
+            Nije moguće učitati profil: {error}
+          </p>
+        </PageCard>
+      </PageShell>
     );
   }
 
@@ -79,14 +90,16 @@ export default async function ProfilPage({ params }: ProfilPageProps) {
   const isOwner = viewerId === korisnik.id;
 
   return (
-    <div className={styles.page}>
+    <PageShell>
       <ProfilView
         korisnik={korisnik}
         usluge={usluge}
         isOwner={isOwner}
         viewerId={viewerId}
         reviewStats={reviewStats}
+        brojPratilaca={brojPratilaca}
+        viewerPrati={viewerPrati}
       />
-    </div>
+    </PageShell>
   );
 }

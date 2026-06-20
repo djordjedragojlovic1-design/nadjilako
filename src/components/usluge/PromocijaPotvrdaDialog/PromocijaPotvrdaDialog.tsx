@@ -1,5 +1,14 @@
 "use client";
 
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   PROMO_CIJENE,
   PROMO_LABELS,
@@ -8,7 +17,6 @@ import {
   type PromoTip,
 } from "@/lib/krediti/constants";
 import type { PromoPonuda } from "@/lib/krediti/promocija";
-import styles from "./PromocijaPotvrdaDialog.module.css";
 
 type PromocijaPotvrdaDialogProps = {
   open: boolean;
@@ -39,8 +47,6 @@ export function PromocijaPotvrdaDialog({
   onClose,
   onConfirm,
 }: PromocijaPotvrdaDialogProps) {
-  if (!open) return null;
-
   const { ciljaniTip, ukupno, akcija, upgradeVarijanta } = ponuda;
   const nedovoljno = krediti < ukupno;
   const naslov =
@@ -50,92 +56,96 @@ export function PromocijaPotvrdaDialog({
     akcija === "upgrade" && upgradeVarijanta === "rana";
 
   return (
-    <div className={styles.overlay} onClick={pending ? undefined : onClose}>
-      <div
-        className={styles.dialog}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="promo-potvrda-naslov"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h3 id="promo-potvrda-naslov" className={styles.title}>
-          {naslov}
-        </h3>
+    <Dialog
+      open={open}
+      onOpenChange={(isOpen) => {
+        if (!isOpen && !pending) onClose();
+      }}
+    >
+      <DialogContent className="sm:max-w-md" showCloseButton={!pending}>
+        <DialogHeader>
+          <DialogTitle>{naslov}</DialogTitle>
+        </DialogHeader>
 
-        <p className={styles.lead}>
+        <p className="text-muted-foreground text-sm leading-normal">
           {akcija === "upgrade" ? (
             <>
               Nadograditi sa „{PROMO_LABELS.izdvojeno}&quot; na „
-              {PROMO_LABELS[ciljaniTip]}&quot;?
+              {PROMO_LABELS[ciljaniTip as PromoTip]}&quot;?
             </>
           ) : (
             <>
-              Promovisati uslugu kao „{PROMO_LABELS[ciljaniTip]}&quot; na{" "}
+              Promovisati uslugu kao „{PROMO_LABELS[ciljaniTip as PromoTip]}&quot; na{" "}
               {PROMO_TRAJANJE_DANA} dana?
             </>
           )}
         </p>
 
-        <dl className={styles.breakdown}>
+        <dl className="mt-4 flex flex-col gap-2">
           {ranaUpgrade && (
-            <div className={styles.row}>
-              <dt>Naknada razlike</dt>
-              <dd>{PROMO_UPGRADE_RAZLIKA} kredita</dd>
+            <div className="flex justify-between gap-4 text-sm">
+              <dt className="text-muted-foreground">Naknada razlike</dt>
+              <dd className="font-semibold">{PROMO_UPGRADE_RAZLIKA} kredita</dd>
             </div>
           )}
           {akcija === "upgrade" && upgradeVarijanta === "puna" && (
-            <div className={styles.row}>
-              <dt>Puna cijena (Izdvojeno+)</dt>
-              <dd>{PROMO_CIJENE["izdvojeno+"]} kredita</dd>
+            <div className="flex justify-between gap-4 text-sm">
+              <dt className="text-muted-foreground">Puna cijena (Izdvojeno+)</dt>
+              <dd className="font-semibold">{PROMO_CIJENE["izdvojeno+"]} kredita</dd>
             </div>
           )}
-          <div className={`${styles.row} ${styles.rowTotal}`}>
+          <div className="flex justify-between gap-4 border-t pt-2 text-base font-bold">
             <dt>Ukupno</dt>
             <dd>{ukupno} kredita</dd>
           </div>
           {akcija === "upgrade" && (
-            <div className={styles.row}>
-              <dt>{ranaUpgrade ? "Rok (ostaje isti)" : "Novi rok"}</dt>
-              <dd>do {formatDatum(ranaUpgrade && promovisanoDo ? promovisanoDo : novoDo)}</dd>
+            <div className="flex justify-between gap-4 text-sm">
+              <dt className="text-muted-foreground">
+                {ranaUpgrade ? "Rok (ostaje isti)" : "Novi rok"}
+              </dt>
+              <dd className="text-right font-semibold">
+                do {formatDatum(ranaUpgrade && promovisanoDo ? promovisanoDo : novoDo)}
+              </dd>
             </div>
           )}
           {akcija === "nova" && (
-            <div className={styles.row}>
-              <dt>Traje do</dt>
-              <dd>{formatDatum(novoDo)}</dd>
+            <div className="flex justify-between gap-4 text-sm">
+              <dt className="text-muted-foreground">Traje do</dt>
+              <dd className="font-semibold">{formatDatum(novoDo)}</dd>
             </div>
           )}
-          <div className={styles.row}>
-            <dt>Vaše stanje</dt>
-            <dd>{krediti} kredita</dd>
+          <div className="flex justify-between gap-4 text-sm">
+            <dt className="text-muted-foreground">Vaše stanje</dt>
+            <dd className="font-semibold">{krediti} kredita</dd>
           </div>
         </dl>
 
         {nedovoljno && (
-          <p className={styles.greska} role="alert">
-            Nemate dovoljno kredita za ovu akciju.
-          </p>
+          <Alert variant="destructive" className="mt-4">
+            <AlertDescription>Nemate dovoljno kredita za ovu akciju.</AlertDescription>
+          </Alert>
         )}
 
-        <div className={styles.actions}>
-          <button
+        <DialogFooter className="mt-2 sm:justify-stretch">
+          <Button
             type="button"
-            className={styles.cancelBtn}
+            variant="outline"
+            className="flex-1"
             onClick={onClose}
             disabled={pending}
           >
             Odustani
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
-            className={styles.confirmBtn}
+            className="flex-1"
             onClick={onConfirm}
             disabled={pending || nedovoljno}
           >
             {pending ? "Obrada..." : `Plati ${ukupno} kredita`}
-          </button>
-        </div>
-      </div>
-    </div>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

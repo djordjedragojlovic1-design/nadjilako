@@ -1,8 +1,14 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { LoginForm } from "@/components/auth/LoginForm";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  PageCard,
+  PageErrorBanner,
+  PageHeader,
+  PageShell,
+} from "@/components/layout/PageShell";
 import { createClient } from "@/lib/supabase/server";
-import styles from "@/styles/page.module.css";
 
 export const metadata: Metadata = {
   title: "Prijava",
@@ -11,7 +17,7 @@ export const metadata: Metadata = {
 export default async function PrijavaPage({
   searchParams,
 }: {
-  searchParams: Promise<{ greska?: string }>;
+  searchParams: Promise<{ greska?: string; poruka?: string; uspjeh?: string }>;
 }) {
   const supabase = await createClient();
   const {
@@ -22,23 +28,36 @@ export default async function PrijavaPage({
     redirect("/");
   }
 
-  const { greska } = await searchParams;
+  const { greska, poruka, uspjeh } = await searchParams;
 
   return (
-    <div className={styles.page}>
-      <header className={styles.header}>
-        <span className={styles.eyebrow}>Nalog</span>
-        <h1 className={styles.title}>Prijava</h1>
-        <p className={styles.subtitle}>Prijavite se na svoj NadjiLako nalog.</p>
-      </header>
-      <section className={`${styles.card} ${styles.cardNarrow}`}>
-        {greska === "potvrda" && (
-          <p className={styles.bannerError}>
-            Potvrda emaila nije uspela. Pokušajte ponovo ili se prijavite.
-          </p>
-        )}
+    <PageShell>
+      <PageHeader
+        eyebrow="Nalog"
+        title="Prijava"
+        subtitle="Prijavite se na svoj NadjiLako nalog."
+      />
+      <PageCard narrow>
+        {uspjeh === "email" ? (
+          <Alert className="mb-6 border-emerald-500/35 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
+            <AlertDescription>
+              Email adresa je potvrđena. Sada se možete prijaviti.
+            </AlertDescription>
+          </Alert>
+        ) : null}
+        {greska === "potvrda" ? (
+          <PageErrorBanner message="Potvrda emaila nije uspela. Pokušajte ponovo ili se prijavite." />
+        ) : null}
+        {greska === "profil" ? (
+          <PageErrorBanner
+            message={
+              poruka ??
+              "Email je potvrđen, ali kreiranje profila nije uspelo. Pokušajte ponovo da se prijavite."
+            }
+          />
+        ) : null}
         <LoginForm />
-      </section>
-    </div>
+      </PageCard>
+    </PageShell>
   );
 }

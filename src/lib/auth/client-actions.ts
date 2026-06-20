@@ -1,13 +1,55 @@
 import { createClient } from "@/lib/supabase/client";
+import {
+  createKorisnikProfileIfMissing,
+  ensureKorisnikProfileForUser,
+} from "@/lib/auth/ensure-profile";
 import { mapAuthError } from "@/lib/auth/messages";
+import { getSiteOrigin } from "@/lib/auth/site-url";
 import {
   getString,
   validateSignIn,
   validateSignUp,
   type AuthFormState,
 } from "@/lib/auth/validation";
+import type { AuthResponse } from "@supabase/supabase-js";
 
 export type { AuthFormState };
+
+function isNonFatalSignUpError(message: string): boolean {
+  const lower = message.toLowerCase();
+  return (
+    lower.includes("redirect") ||
+    lower.includes("confirmation") ||
+    lower.includes("confirm") ||
+    (lower.includes("email") && lower.includes("send")) ||
+    lower.includes("authapierror")
+  );
+}
+
+function resolveSignUpResult(
+  authData: AuthResponse["data"],
+  signUpError: AuthResponse["error"],
+): AuthFormState | "continue" {
+  if (authData.user?.identities?.length === 0) {
+    return { error: "Nalog sa ovim emailom već postoji." };
+  }
+
+  if (!authData.user) {
+    if (!signUpError || isNonFatalSignUpError(signUpError.message)) {
+      return {
+        success:
+          "Ako je email validan, poslaćemo vam link za potvrdu. Provjerite inbox i spam, zatim se prijavite.",
+      };
+    }
+    return { error: mapAuthError(signUpError.message) };
+  }
+
+  if (signUpError && !isNonFatalSignUpError(signUpError.message)) {
+    return { error: mapAuthError(signUpError.message) };
+  }
+
+  return "continue";
+}
 
 export async function signInClient(formData: FormData): Promise<AuthFormState> {
   const email = getString(formData, "email");
@@ -17,13 +59,33 @@ export async function signInClient(formData: FormData): Promise<AuthFormState> {
   if (validationError) return validationError;
 
   const supabase = createClient();
-  const { error } = await supabase.auth.signInWithPassword({
+  const { data: signInData, error } = await supabase.auth.signInWithPassword({
     email,
     password: lozinka,
   });
 
   if (error) {
     return { error: mapAuthError(error.message) };
+  }
+
+  const user = signInData.user;
+  if (user) {
+    const { data: existingProfile } = await supabase
+      .from("korisnik")
+      .select("id")
+      .eq("user_uuid", user.id)
+      .maybeSingle();
+
+    if (!existingProfile) {
+      const { error: profileError } = await ensureKorisnikProfileForUser(
+        supabase,
+        user,
+      );
+      if (profileError) {
+        await supabase.auth.signOut();
+        return { error: profileError };
+      }
+    }
   }
 
   return {};
@@ -59,9 +121,9 @@ export async function signUpClient(formData: FormData): Promise<AuthFormState> {
     return { error: "Korisničko ime je već zauzeto." };
   }
 
-  const origin =
-    process.env.NEXT_PUBLIC_SITE_URL ??
-    (typeof window !== "undefined" ? window.location.origin : "http://localhost:3000");
+  const origin = getSiteOrigin(
+    typeof window !== "undefined" ? window.location.origin : undefined,
+  );
 
   const { data: authData, error: signUpError } = await supabase.auth.signUp({
     email,
@@ -77,30 +139,35 @@ export async function signUpClient(formData: FormData): Promise<AuthFormState> {
     },
   });
 
-  if (signUpError) {
-    return { error: mapAuthError(signUpError.message) };
+  const signUpResult = resolveSignUpResult(authData, signUpError);
+  if (signUpResult !== "continue") {
+    return signUpResult;
   }
 
   const user = authData.user;
   if (!user) {
-    return { error: "Registracija nije uspela. Pokušajte ponovo." };
-  }
-
-  const { error: profileError } = await supabase.from("korisnik").insert({
-    user_uuid: user.id,
-    ime,
-    prezime,
-    korisnicko_ime: korisnickoIme,
-    drzava: drzavaRaw,
-    is_active: true,
-    is_verified: false,
-  });
-
-  if (profileError) {
-    return { error: mapAuthError(profileError.message) };
+    return {
+      success:
+        "Nalog je kreiran. Proverite email i potvrdite adresu, zatim se prijavite.",
+    };
   }
 
   if (authData.session) {
+    const { error: profileError } = await createKorisnikProfileIfMissing(
+      supabase,
+      user.id,
+      {
+        ime,
+        prezime,
+        korisnicko_ime: korisnickoIme,
+        drzava: drzavaRaw,
+      },
+    );
+
+    if (profileError) {
+      return { error: profileError };
+    }
+
     return {};
   }
 

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import styles from "./GradoviTags.module.css";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 const MAX_VISIBLE = 8;
 
@@ -19,30 +20,34 @@ export function GradoviTags({ gradovi }: GradoviTagsProps) {
   const hiddenCount = gradovi.length - MAX_VISIBLE;
 
   return (
-    <div className={styles.gradoviTags}>
+    <div className="flex flex-wrap items-center gap-1">
       {visible.map((grad) => (
-        <span key={grad} className={styles.tag}>
+        <Badge key={grad} variant="secondary">
           {grad}
-        </span>
+        </Badge>
       ))}
       {hasMore && !expanded && (
-        <button
+        <Button
           type="button"
-          className={styles.expandBtn}
+          variant="outline"
+          size="xs"
+          className="rounded-full border-dashed"
           onClick={() => setExpanded(true)}
           aria-label={`Prikaži još ${hiddenCount} gradova`}
         >
           i još {hiddenCount}
-        </button>
+        </Button>
       )}
       {hasMore && expanded && (
-        <button
+        <Button
           type="button"
-          className={styles.expandBtn}
+          variant="outline"
+          size="xs"
+          className="rounded-full border-dashed"
           onClick={() => setExpanded(false)}
         >
           Prikaži manje
-        </button>
+        </Button>
       )}
     </div>
   );

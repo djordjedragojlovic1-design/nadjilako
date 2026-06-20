@@ -3,8 +3,11 @@
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { AppLink } from "@/components/ui/AppLink";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { signInClient } from "@/lib/auth/client-actions";
-import authStyles from "./auth.module.css";
 
 export function LoginForm() {
   const router = useRouter();
@@ -30,50 +33,47 @@ export function LoginForm() {
   }
 
   return (
-    <form className={authStyles.form} onSubmit={handleSubmit}>
-      {error && (
-        <p className={`${authStyles.alert} ${authStyles.alertError}`} role="alert">
-          {error}
-        </p>
-      )}
+    <form className="space-y-4" onSubmit={handleSubmit}>
+      {error ? (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      ) : null}
 
-      <div className={authStyles.field}>
-        <label className={authStyles.label} htmlFor="email">
-          Email
-        </label>
-        <input
+      <div className="space-y-2">
+        <Label htmlFor="email">Email</Label>
+        <Input
           id="email"
           name="email"
           type="email"
           autoComplete="email"
           required
-          className={authStyles.input}
           placeholder="vas@email.com"
         />
       </div>
 
-      <div className={authStyles.field}>
-        <label className={authStyles.label} htmlFor="lozinka">
-          Lozinka
-        </label>
-        <input
+      <div className="space-y-2">
+        <Label htmlFor="lozinka">Lozinka</Label>
+        <Input
           id="lozinka"
           name="lozinka"
           type="password"
           autoComplete="current-password"
           required
           minLength={6}
-          className={authStyles.input}
           placeholder="••••••••"
         />
       </div>
 
-      <button type="submit" className={authStyles.submit} disabled={pending}>
+      <Button type="submit" className="w-full" disabled={pending}>
         {pending ? "Prijava..." : "Prijavi se"}
-      </button>
+      </Button>
 
-      <p className={authStyles.footer}>
-        Nemate nalog? <AppLink href="/registracija">Registrujte se</AppLink>
+      <p className="text-muted-foreground text-center text-sm">
+        Nemate nalog?{" "}
+        <AppLink href="/registracija" className="text-primary font-semibold hover:underline">
+          Registrujte se
+        </AppLink>
       </p>
     </form>
   );

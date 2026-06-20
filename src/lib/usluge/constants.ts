@@ -11,6 +11,7 @@ export const STATUS_LABELS: Record<string, string> = {
 export const TIP_CIJENE_LABELS: Record<string, string> = {
   sat: "po satu",
   dan: "po danu",
+  mjesecno: "mjesečno",
   kvadrat: "po m²",
   komad: "po komadu",
   projekat: "po projektu",
@@ -62,7 +63,7 @@ export type MinOcjena = (typeof MIN_OCJENA_OPCIJE)[number];
 
 export const STATUS_OPTIONS = ["aktivno", "pauzirano", "zavrseno"] as const;
 
-export const TIP_CIJENE_OPTIONS = ["sat", "dan", "kvadrat", "komad", "projekat", "dogovor"] as const;
+export const TIP_CIJENE_OPTIONS = ["sat", "dan", "mjesecno", "kvadrat", "komad", "projekat", "dogovor"] as const;
 
 export const VALUTA_OPTIONS = ["BAM", "EUR", "RSD"] as const;
 

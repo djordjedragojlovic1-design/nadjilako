@@ -1,7 +1,20 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import styles from "./KategorijaIdSelect.module.css";
+import { useMemo, useState } from "react";
+import { ChevronsUpDownIcon } from "lucide-react";
+import {
+  Command,
+  CommandEmpty,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 export type KategorijaStavka = {
   id: number;
@@ -30,18 +43,6 @@ export function KategorijaIdSelect({
 }: KategorijaIdSelectProps) {
   const [open, setOpen] = useState(false);
   const [pretraga, setPretraga] = useState("");
-  const wrapRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const onClick = (e: MouseEvent) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", onClick);
-    return () => document.removeEventListener("mousedown", onClick);
-  }, [open]);
 
   const izabrana =
     value != null ? kategorije.find((k) => k.id === value)?.naziv ?? null : null;
@@ -59,67 +60,49 @@ export function KategorijaIdSelect({
   };
 
   return (
-    <div className={styles.wrap} ref={wrapRef}>
-      <button
-        type="button"
-        className={styles.trigger}
-        onClick={() => setOpen((v) => !v)}
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger
+        className={cn(
+          "flex h-8 w-full items-center justify-between gap-2 rounded-lg border border-input bg-transparent px-2.5 text-sm transition-colors outline-none hover:bg-muted/50 dark:bg-input/30",
+        )}
         aria-haspopup="listbox"
         aria-expanded={open}
       >
-        <span className={izabrana ? styles.triggerValue : styles.triggerPlaceholder}>
+        <span className={cn("truncate", !izabrana && "text-muted-foreground")}>
           {izabrana ?? "Bez kategorije"}
         </span>
-        <svg className={styles.caret} viewBox="0 0 24 24" fill="none" aria-hidden>
-          <path
-            d="M6 9l6 6 6-6"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </button>
-
-      {open && (
-        <div className={styles.panel}>
-          <input
-            type="search"
-            className={styles.search}
+        <ChevronsUpDownIcon className="size-4 shrink-0 opacity-50" />
+      </PopoverTrigger>
+      <PopoverContent className="w-[var(--anchor-width)] p-0" align="start">
+        <Command shouldFilter={false}>
+          <CommandInput
             placeholder="Pretraži kategorije..."
             value={pretraga}
-            onChange={(e) => setPretraga(e.target.value)}
-            autoFocus
+            onValueChange={setPretraga}
           />
-          <ul className={styles.list} role="listbox">
-            <li>
-              <button
-                type="button"
-                className={`${styles.option} ${value === null ? styles.optionActive : ""}`}
-                onClick={() => izaberi(null)}
-              >
-                Bez kategorije
-              </button>
-            </li>
+          <CommandList>
+            <CommandEmpty>Nema rezultata</CommandEmpty>
+            <CommandItem
+              value="bez-kategorije"
+              data-checked={value === null}
+              onSelect={() => izaberi(null)}
+            >
+              Bez kategorije
+            </CommandItem>
             {filtrirane.map((k) => (
-              <li key={k.id}>
-                <button
-                  type="button"
-                  className={`${styles.option} ${
-                    k.parentNaziv ? styles.optionChild : styles.optionParent
-                  } ${k.id === value ? styles.optionActive : ""}`}
-                  onClick={() => izaberi(k.id)}
-                >
-                  {k.naziv}
-                </button>
-              </li>
+              <CommandItem
+                key={k.id}
+                value={String(k.id)}
+                data-checked={k.id === value}
+                className={cn(k.parentNaziv ? "pl-6" : "font-bold")}
+                onSelect={() => izaberi(k.id)}
+              >
+                {k.naziv}
+              </CommandItem>
             ))}
-            {filtrirane.length === 0 && (
-              <li className={styles.prazno}>Nema rezultata</li>
-            )}
-          </ul>
-        </div>
-      )}
-    </div>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 }

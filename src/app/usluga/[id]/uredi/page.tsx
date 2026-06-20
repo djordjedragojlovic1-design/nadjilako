@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
+import { PageCard, PageHeader, PageShell } from "@/components/layout/PageShell";
 import { UslugaForm } from "@/components/usluge/ObjaviUsluguForm/ObjaviUsluguForm";
 import { PromocijaPanel } from "@/components/usluge/PromocijaPanel/PromocijaPanel";
 import { getViewerKorisnik } from "@/lib/korisnik/queries";
 import { parseMjestaRada } from "@/lib/lokacije/utils";
 import { fetchKategorijeZaFormu, fetchUslugaById } from "@/lib/usluge/queries";
-import styles from "@/styles/page.module.css";
 
 type UrediUsluguPageProps = {
   params: Promise<{ id: string }>;
@@ -43,11 +43,13 @@ export default async function UrediUsluguPage({ params }: UrediUsluguPageProps) 
 
   if (error) {
     return (
-      <div className={styles.page}>
-        <section className={styles.card}>
-          <p>Nije moguće učitati uslugu: {error}</p>
-        </section>
-      </div>
+      <PageShell>
+        <PageCard>
+          <p className="text-muted-foreground">
+            Nije moguće učitati uslugu: {error}
+          </p>
+        </PageCard>
+      </PageShell>
     );
   }
 
@@ -62,15 +64,13 @@ export default async function UrediUsluguPage({ params }: UrediUsluguPageProps) 
   const mjesta = parseMjestaRada(usluga.mjesta_rada);
 
   return (
-    <div className={styles.page}>
-      <header className={styles.header}>
-        <span className={styles.eyebrow}>Oglas</span>
-        <h1 className={styles.title}>Uredi uslugu</h1>
-        <p className={styles.subtitle}>
-          Ažurirajte podatke, mjesta rada, cijenu i slike.
-        </p>
-      </header>
-      <section className={`${styles.card} ${styles.cardWide}`}>
+    <PageShell>
+      <PageHeader
+        eyebrow="Oglas"
+        title="Uredi uslugu"
+        subtitle="Ažurirajte podatke, mjesta rada, cijenu i slike."
+      />
+      <PageCard wide>
         <UslugaForm
           mode="edit"
           korisnikId={korisnik.id}
@@ -81,18 +81,18 @@ export default async function UrediUsluguPage({ params }: UrediUsluguPageProps) 
             naziv: usluga.naziv,
             informacije: usluga.informacije ?? "",
             status: usluga.status,
-            cijena: usluga.cijena ?? 0,
+            cijena: usluga.cijena,
             tip_cijene: usluga.tip_cijene ?? "",
-            valuta: usluga.valuta ?? "BAM",
+            valuta: usluga.valuta,
             kategorija_id: usluga.kategorija_id,
             drzave: mjesta.drzave,
             gradovi: mjesta.gradovi,
             postojeceSlike: usluga.slikeRows,
           }}
         />
-      </section>
+      </PageCard>
 
-      <div style={{ maxWidth: "40rem", marginTop: "var(--space-lg)" }}>
+      <div className="mx-auto mt-6 max-w-2xl">
         <PromocijaPanel
           uslugaId={usluga.id}
           promocija={usluga.promocija}
@@ -100,6 +100,6 @@ export default async function UrediUsluguPage({ params }: UrediUsluguPageProps) 
           promovisanoOd={usluga.promovisano_od ?? null}
         />
       </div>
-    </div>
+    </PageShell>
   );
 }

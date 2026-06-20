@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { PageCard, PageHeader, PageShell } from "@/components/layout/PageShell";
 import { VerifikacijaPanel } from "@/components/profil/VerifikacijaPanel/VerifikacijaPanel";
 import { fetchKorisnikByUserUuid } from "@/lib/korisnik/queries";
 import { createClient } from "@/lib/supabase/server";
-import styles from "@/styles/page.module.css";
 
 export const metadata: Metadata = {
   title: "Verifikacija",
@@ -25,17 +25,14 @@ export default async function VerifikacijaPage() {
   }
 
   return (
-    <div className={styles.page}>
-      <header className={styles.header}>
-        <span className={styles.eyebrow}>Nalog</span>
-        <h1 className={styles.title}>Verifikacija</h1>
-        <p className={styles.subtitle}>
-          Potvrdite svoju email adresu i broj telefona kako bi vaš profil bio
-          pouzdaniji.
-        </p>
-      </header>
+    <PageShell>
+      <PageHeader
+        eyebrow="Nalog"
+        title="Verifikacija"
+        subtitle="Potvrdite svoju email adresu i broj telefona kako bi vaš profil bio pouzdaniji."
+      />
 
-      <section className={`${styles.card} ${styles.cardWide}`}>
+      <PageCard wide>
         <VerifikacijaPanel
           korisnikId={korisnik.id}
           email={user.email ?? ""}
@@ -43,7 +40,7 @@ export default async function VerifikacijaPage() {
           brojTelefona={korisnik.broj_telefona}
           telefonVerifikovan={korisnik.telefon_verifikovan}
         />
-      </section>
-    </div>
+      </PageCard>
+    </PageShell>
   );
 }

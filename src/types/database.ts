@@ -77,6 +77,20 @@ export type Poruka = {
   sent_at: string;
 };
 
+export type Pratilac = {
+  id: number;
+  korisnik_id: number;
+  pratilac_id: number;
+  created_at: string;
+};
+
+export type SacuvanaObjava = {
+  id: number;
+  korisnik_id: number;
+  usluga_id: number;
+  created_at: string;
+};
+
 export type Database = {
   public: {
     Tables: {
@@ -210,6 +224,24 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["kredit_transakcije"]["Insert"]>;
         Relationships: [];
       };
+      pratioci: {
+        Row: Pratilac;
+        Insert: {
+          korisnik_id: number;
+          pratilac_id: number;
+        };
+        Update: Partial<Database["public"]["Tables"]["pratioci"]["Insert"]>;
+        Relationships: [];
+      };
+      sacuvane_objave: {
+        Row: SacuvanaObjava;
+        Insert: {
+          korisnik_id: number;
+          usluga_id: number;
+        };
+        Update: Partial<Database["public"]["Tables"]["sacuvane_objave"]["Insert"]>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -219,6 +251,14 @@ export type Database = {
       };
       promovisi_uslugu: {
         Args: { p_usluga_id: number; p_tip: string; p_dana?: number };
+        Returns: number;
+      };
+      broj_pratilaca: {
+        Args: { p_korisnik_id: number };
+        Returns: number;
+      };
+      broj_pracenih: {
+        Args: { p_korisnik_id: number };
         Returns: number;
       };
     };

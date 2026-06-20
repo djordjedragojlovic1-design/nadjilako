@@ -1,11 +1,14 @@
 "use client";
 
-import Image from "next/image";
 import { useMemo, useState } from "react";
 import { AppLink } from "@/components/ui/AppLink";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { formatKratkoVrijeme, getInitials } from "@/lib/chat/format";
 import type { RazgovorListItem } from "@/lib/chat/types";
-import styles from "./Chat.module.css";
+import { cn } from "@/lib/utils";
 
 type RazgovorListaProps = {
   razgovori: RazgovorListItem[];
@@ -38,11 +41,10 @@ export function RazgovorLista({ razgovori, activeChatId }: RazgovorListaProps) {
 
   return (
     <>
-      <div className={styles.listHeader}>
-        <h1 className={styles.listTitle}>Poruke</h1>
-        <input
+      <div className="border-b p-4">
+        <h1 className="mb-2 text-lg font-bold">Poruke</h1>
+        <Input
           type="search"
-          className={styles.search}
           placeholder="Pretraži razgovore..."
           value={q}
           onChange={(e) => setQ(e.target.value)}
@@ -50,9 +52,9 @@ export function RazgovorLista({ razgovori, activeChatId }: RazgovorListaProps) {
         />
       </div>
 
-      <div className={styles.listScroll}>
+      <ScrollArea className="min-h-0 flex-1">
         {filtrirani.length === 0 ? (
-          <p className={styles.empty}>
+          <p className="px-4 py-8 text-center text-sm text-muted-foreground">
             {razgovori.length === 0
               ? "Još nemate nijedan razgovor."
               : "Nema rezultata pretrage."}
@@ -66,44 +68,45 @@ export function RazgovorLista({ razgovori, activeChatId }: RazgovorListaProps) {
               <AppLink
                 key={r.id}
                 href={`/chat/${r.id}`}
-                className={`${styles.razgovor} ${
-                  r.id === activeChatId ? styles.razgovorActive : ""
-                }`}
+                className={cn(
+                  "flex w-full items-center gap-4 border-b p-4 text-left transition-colors hover:bg-muted/50",
+                  r.id === activeChatId && "bg-primary/10 hover:bg-primary/10",
+                )}
               >
-                <span className={styles.avatar}>
+                <Avatar className="size-11 shrink-0">
                   {ucesnik.profilna_slika ? (
-                    <Image
-                      src={ucesnik.profilna_slika}
-                      alt=""
-                      fill
-                      sizes="44px"
-                      className={styles.avatarImg}
-                    />
-                  ) : (
-                    getInitials(ucesnik.ime, ucesnik.prezime)
-                  )}
-                </span>
-                <span className={styles.razgovorBody}>
-                  <span className={styles.razgovorTop}>
-                    <span className={styles.razgovorName}>{prikaznoIme}</span>
-                    <span className={styles.razgovorTime}>
+                    <AvatarImage src={ucesnik.profilna_slika} alt="" />
+                  ) : null}
+                  <AvatarFallback className="font-semibold">
+                    {getInitials(ucesnik.ime, ucesnik.prezime)}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-baseline justify-between gap-2">
+                    <span className="truncate text-sm font-semibold">
+                      {prikaznoIme}
+                    </span>
+                    <span className="shrink-0 text-xs text-muted-foreground">
                       {formatKratkoVrijeme(r.lastMessageAt)}
                     </span>
                   </span>
-                  <span className={styles.razgovorPreview}>
+                  <span className="mt-0.5 flex items-center justify-between gap-2">
                     <span
-                      className={`${styles.razgovorText} ${
-                        nepr ? styles.razgovorTextUnread : ""
-                      }`}
+                      className={cn(
+                        "truncate text-sm text-muted-foreground",
+                        nepr && "font-semibold text-foreground",
+                      )}
                     >
                       {preview(r)}
                     </span>
                     {nepr && (
-                      <span className={styles.badge}>{r.brojNeprocitanih}</span>
+                      <Badge className="size-5 min-w-5 shrink-0 justify-center rounded-full px-1.5 text-[0.7rem]">
+                        {r.brojNeprocitanih}
+                      </Badge>
                     )}
                   </span>
                   {r.usluga && (
-                    <span className={styles.razgovorUsluga}>
+                    <span className="mt-0.5 block truncate text-xs text-primary">
                       {r.usluga.naziv}
                     </span>
                   )}
@@ -112,7 +115,7 @@ export function RazgovorLista({ razgovori, activeChatId }: RazgovorListaProps) {
             );
           })
         )}
-      </div>
+      </ScrollArea>
     </>
   );
 }

@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import styles from "./Chat.module.css";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 type PosaljiPorukuButtonProps = {
   viewerId: number | null;
@@ -33,9 +34,9 @@ export function PosaljiPorukuButton({
   };
 
   return (
-    <button
+    <Button
       type="button"
-      className={`${styles.kontaktBtn} ${className ?? ""}`}
+      className={cn("gap-2", className)}
       onClick={onClick}
     >
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -47,6 +48,6 @@ export function PosaljiPorukuButton({
         />
       </svg>
       {label}
-    </button>
+    </Button>
   );
 }

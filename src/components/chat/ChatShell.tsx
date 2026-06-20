@@ -4,8 +4,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, type ReactNode } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { RazgovorListItem } from "@/lib/chat/types";
+import { cn } from "@/lib/utils";
 import { RazgovorLista } from "./RazgovorLista";
-import styles from "./Chat.module.css";
 
 type ChatShellProps = {
   razgovori: RazgovorListItem[];
@@ -47,11 +47,31 @@ export function ChatShell({ razgovori, children }: ChatShellProps) {
   }, [router]);
 
   return (
-    <div className={styles.shell} data-view={isIndex ? "list" : "chat"}>
-      <aside className={styles.listPane}>
+    <div
+      className={cn(
+        "mx-auto grid min-h-[420px] max-w-6xl overflow-hidden rounded-xl border bg-card shadow-sm",
+        "my-6 h-[calc(100dvh-var(--navbar-height)-2rem)]",
+        "grid-cols-[minmax(280px,360px)_1fr]",
+        "max-md:my-0 max-md:h-[calc(100dvh-var(--navbar-height))] max-md:grid-cols-1 max-md:rounded-none max-md:border-x-0",
+      )}
+      data-view={isIndex ? "list" : "chat"}
+    >
+      <aside
+        className={cn(
+          "flex min-h-0 flex-col border-r",
+          !isIndex && "max-md:hidden",
+        )}
+      >
         <RazgovorLista razgovori={razgovori} activeChatId={activeChatId} />
       </aside>
-      <section className={styles.contentPane}>{children}</section>
+      <section
+        className={cn(
+          "flex min-h-0 flex-col",
+          isIndex && "max-md:hidden",
+        )}
+      >
+        {children}
+      </section>
     </div>
   );
 }
