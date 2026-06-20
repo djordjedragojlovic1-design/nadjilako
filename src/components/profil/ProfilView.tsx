@@ -93,7 +93,15 @@ export function ProfilView({
                 </Badge>
               )}
               {isOwner && (
-                <Badge variant="secondary">{korisnik.krediti} kredita</Badge>
+                <AppLink
+                  href="/krediti"
+                  className="rounded-md transition-opacity hover:opacity-80"
+                  aria-label="Dopuni kredite"
+                >
+                  <Badge variant="secondary" className="cursor-pointer">
+                    {korisnik.krediti} kredita
+                  </Badge>
+                </AppLink>
               )}
             </div>
 

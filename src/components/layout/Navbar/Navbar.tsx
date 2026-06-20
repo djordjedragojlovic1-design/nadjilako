@@ -363,6 +363,20 @@ export function Navbar() {
               linkClassName="justify-start px-3 py-2.5 text-base"
               onNavigate={closeMobile}
             />
+            {!loading && isLoggedIn && (
+              <AppLink
+                href="/krediti"
+                className={cn(
+                  buttonVariants({ variant: "secondary" }),
+                  "justify-start gap-2 px-3 py-2.5 text-base",
+                )}
+                onClick={closeMobile}
+                aria-label="Krediti"
+              >
+                <Coins className="size-5" />
+                <span>{korisnik?.krediti ?? 0} kredita</span>
+              </AppLink>
+            )}
             {!loading && !isLoggedIn && (
               <div className="flex flex-col gap-2 border-t pt-4">
                 <AppLink
