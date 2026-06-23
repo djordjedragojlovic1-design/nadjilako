@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { DemoSiteBanner } from "@/components/layout/DemoSiteBanner/DemoSiteBanner";
 import { Footer } from "@/components/layout/Footer/Footer";
@@ -109,6 +110,7 @@ export default function RootLayout({
             </div>
           </AuthProvider>
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );
