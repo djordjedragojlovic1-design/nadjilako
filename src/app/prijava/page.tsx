@@ -12,6 +12,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "Prijava",
+  robots: { index: false, follow: false },
 };
 
 export default async function PrijavaPage({

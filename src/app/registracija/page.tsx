@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "Registracija",
+  robots: { index: false, follow: false },
 };
 
 export default async function RegistracijaPage() {

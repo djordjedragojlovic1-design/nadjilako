@@ -11,6 +11,7 @@ import { fetchKategorijeZaFormu } from "@/lib/usluge/queries";
 
 export const metadata: Metadata = {
   title: "Objavi uslugu",
+  robots: { index: false, follow: false },
 };
 
 export default async function ObjaviUsluguPage() {

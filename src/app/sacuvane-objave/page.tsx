@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "Sačuvane objave",
+  robots: { index: false, follow: false },
 };
 
 export default async function SacuvaneObjavePage() {

@@ -7,6 +7,7 @@ import { getViewerKorisnik } from "@/lib/korisnik/queries";
 
 export const metadata: Metadata = {
   title: "Poruke",
+  robots: { index: false, follow: false },
 };
 
 export default async function ChatLayout({

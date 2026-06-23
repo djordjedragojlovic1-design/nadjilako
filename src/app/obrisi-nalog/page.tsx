@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "Obriši nalog",
+  robots: { index: false, follow: false },
 };
 
 export default async function ObrisiNalogPage() {

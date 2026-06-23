@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "Verifikacija",
+  robots: { index: false, follow: false },
 };
 
 export default async function VerifikacijaPage() {

@@ -9,7 +9,16 @@ import { fetchKategorijeStablo } from "@/lib/usluge/queries";
 import type { KategorijaCvor } from "@/lib/usluge/types";
 
 export const metadata: Metadata = {
-  title: "Kategorije",
+  title: "Kategorije usluga",
+  description:
+    "Pregledaj sve kategorije usluga na NadjiLako — od majstora i zanatlija do profesionalnih usluga. Pronađi pravu kategoriju i otkrij ponudu u svom regionu.",
+  alternates: { canonical: "/kategorije" },
+  openGraph: {
+    title: "Kategorije usluga",
+    description:
+      "Pregledaj sve kategorije usluga na NadjiLako i otkrij ponudu u svom regionu.",
+    url: "/kategorije",
+  },
 };
 
 export default async function KategorijePage() {

@@ -15,10 +15,6 @@ import type {
   PretragaRezultat,
 } from "@/lib/usluge/types";
 
-export const metadata: Metadata = {
-  title: "Pretraga",
-};
-
 type PretragaPageProps = {
   searchParams: Promise<{
     q?: string;
@@ -34,6 +30,47 @@ type PretragaPageProps = {
     page?: string;
   }>;
 };
+
+export async function generateMetadata({
+  searchParams,
+}: PretragaPageProps): Promise<Metadata> {
+  const sp = await searchParams;
+  const q = sp.q?.trim();
+  const kategorija = sp.kategorija?.trim();
+  const strana = Number(sp.page);
+  const hasPaging = Number.isFinite(strana) && strana > 1;
+
+  const hasOtherFilters = Boolean(
+    q ||
+      sp.drzava?.trim() ||
+      sp.grad?.trim() ||
+      sp.tip?.trim() ||
+      sp.ocjena?.trim() ||
+      (sp.sort && sp.sort !== DEFAULT_SORT) ||
+      hasPaging,
+  );
+
+  // Indeksiramo samo čistu pretragu ili stranicu jedne kategorije;
+  // kombinacije filtera/pretrage ostaju van indeksa (izbjegavamo duplikate).
+  const onlyKategorija = Boolean(kategorija) && !hasOtherFilters;
+  const indexable = onlyKategorija || (!kategorija && !hasOtherFilters);
+
+  const canonical = onlyKategorija
+    ? `/pretraga?kategorija=${encodeURIComponent(kategorija as string)}`
+    : "/pretraga";
+
+  const title = q ? `Pretraga: ${q}` : "Pretraga usluga";
+  const description =
+    "Pretraži i filtriraj usluge po kategoriji, lokaciji, cijeni i ocjeni na NadjiLako platformi.";
+
+  return {
+    title,
+    description,
+    alternates: { canonical },
+    robots: indexable ? undefined : { index: false, follow: true },
+    openGraph: { title, description, url: canonical },
+  };
+}
 
 function toNum(value: string | undefined): number | undefined {
   if (value == null) return undefined;

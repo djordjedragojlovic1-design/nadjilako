@@ -13,6 +13,7 @@ type UrediUsluguPageProps = {
 
 export const metadata: Metadata = {
   title: "Uredi uslugu",
+  robots: { index: false, follow: false },
 };
 
 export default async function UrediUsluguPage({ params }: UrediUsluguPageProps) {

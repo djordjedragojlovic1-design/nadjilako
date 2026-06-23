@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "Pratioci",
+  robots: { index: false, follow: false },
 };
 
 export default async function PratiociPage() {
