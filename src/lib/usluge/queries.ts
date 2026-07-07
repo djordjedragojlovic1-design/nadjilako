@@ -489,7 +489,6 @@ export async function searchUsluge(
   const sort = params.sort ?? DEFAULT_SORT;
   const trazeniPojamNorm = normalizeTekst(params.q?.trim() ?? "");
 
-  // ── Kategorije: hijerarhija za filter i facete ──
   const { data: katsData, error: katsError } = await supabase
     .from("kategorije")
     .select("id, naziv, slug, parent_id");
@@ -541,7 +540,6 @@ export async function searchUsluge(
     }
   }
 
-  // ── Sve aktivne usluge (filtriranje i faceti idu in-memory) ──
   const kolone = (saPromocijom: boolean) => `
       id,
       naziv,
@@ -616,7 +614,6 @@ export async function searchUsluge(
     };
   });
 
-  // ── Predikati za pojedinačne filtere ──
   const valutaFiltera = params.valuta ?? DEFAULT_VALUTA;
   const kursFiltera = KURS_U_BAM[valutaFiltera] ?? 1;
   const minBAM = params.cijenaMin != null ? params.cijenaMin * kursFiltera : null;
@@ -638,7 +635,7 @@ export async function searchUsluge(
   const matchTip = (e: ObogacenaUsluga) =>
     !params.tip || e.item.tip_cijene === params.tip;
   const matchCijena = (e: ObogacenaUsluga) => {
-    if (!params.tip) return true; // raspon ima smisla tek uz izabran tip cijene
+    if (!params.tip) return true;
     if (minBAM == null && maxBAM == null) return true;
     if (e.cijenaBAM == null) return false;
     if (minBAM != null && e.cijenaBAM < minBAM) return false;
@@ -659,7 +656,6 @@ export async function searchUsluge(
     return true;
   };
 
-  // ── Faceti (brojevi rezultata uz svaku opciju) ──
   const zaLokaciju = obogacene.filter((e) => prolazi(e, new Set(["lokacija"])));
   const drzaveFacet = DRZAVE.map((d) => ({
     value: d as string,
@@ -724,7 +720,6 @@ export async function searchUsluge(
     ocjene: ocjeneFacet,
   };
 
-  // ── Konačni rezultat: filtriranje, sortiranje, paginacija ──
   const filtrirane = obogacene.filter((e) => prolazi(e));
 
   const cijenaZaSort = (e: ObogacenaUsluga): number | null =>
@@ -750,7 +745,7 @@ export async function searchUsluge(
         const ax = cijenaZaSort(a);
         const bx = cijenaZaSort(b);
         if (ax == null && bx == null) return 0;
-        if (ax == null) return 1; // "po dogovoru" / bez cijene uvijek na dno
+        if (ax == null) return 1;
         if (bx == null) return -1;
         return sort === "cijena_asc" ? ax - bx : bx - ax;
       }

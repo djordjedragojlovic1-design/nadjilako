@@ -100,7 +100,6 @@ export function UslugaSlikeLightbox({
           )}
 
           <div className="flex max-h-[calc(95vh-8rem)] w-full items-center justify-center">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={src}
               alt={`${alt} — slika ${index + 1}`}

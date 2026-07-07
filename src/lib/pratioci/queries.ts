@@ -3,10 +3,6 @@ import type { PratiociKorisnik } from "./types";
 
 const KORISNIK_KOLONE = "id, ime, prezime, korisnicko_ime, profilna_slika";
 
-/**
- * Javni broj pratilaca naloga. Koristi SECURITY DEFINER funkciju da bi broj
- * bio vidljiv svima, dok sama lista pratilaca ostaje privatna (RLS).
- */
 export async function fetchBrojPratilaca(korisnikId: number): Promise<number> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("broj_pratilaca", {
@@ -16,7 +12,6 @@ export async function fetchBrojPratilaca(korisnikId: number): Promise<number> {
   return data ?? 0;
 }
 
-/** Da li viewer (pratilacId) prati nalog korisnikId. */
 export async function fetchDaLiPrati(
   pratilacId: number,
   korisnikId: number,
@@ -33,7 +28,6 @@ export async function fetchDaLiPrati(
   return data != null;
 }
 
-/** Nalozi koji prate dati nalog (vidi samo vlasnik — RLS). */
 export async function fetchPratioci(
   korisnikId: number,
 ): Promise<PratiociKorisnik[]> {
@@ -51,7 +45,6 @@ export async function fetchPratioci(
     .filter((k): k is PratiociKorisnik => k != null);
 }
 
-/** Nalozi koje dati nalog prati (vidi samo vlasnik — RLS). */
 export async function fetchPraceni(
   korisnikId: number,
 ): Promise<PratiociKorisnik[]> {

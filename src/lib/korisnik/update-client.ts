@@ -139,7 +139,6 @@ export async function updateProfilClient(
       drzava: payload.drzava,
       lokacija: payload.lokacija.trim() || null,
       broj_telefona: noviBroj,
-      // Promjena broja poništava prethodnu verifikaciju
       ...(brojPromijenjen ? { telefon_verifikovan: false } : {}),
       ...(profilna_slika !== undefined ? { profilna_slika } : {}),
     })

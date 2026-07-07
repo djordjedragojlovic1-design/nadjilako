@@ -105,7 +105,6 @@ export async function findOrCreateChat(params: {
     .single();
 
   if (error) {
-    // Trka pri istovremenom kreiranju — pokušaj ponovo da nađeš razgovor.
     if (error.code === "23505") {
       const retry = await findChatId(supabase, viewerId, primalacId, uslugaId);
       if (retry.id) return { chatId: retry.id };

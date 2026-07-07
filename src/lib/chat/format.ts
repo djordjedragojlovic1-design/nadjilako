@@ -10,7 +10,6 @@ function isSameDay(a: Date, b: Date): boolean {
   );
 }
 
-/** Kratko vrijeme za listu razgovora: danas -> HH:MM, inače datum. */
 export function formatKratkoVrijeme(iso: string): string {
   const d = new Date(iso);
   const sada = new Date();
@@ -24,7 +23,6 @@ export function formatKratkoVrijeme(iso: string): string {
   return d.toLocaleDateString("sr", { day: "2-digit", month: "2-digit" });
 }
 
-/** Vrijeme uz poruku (HH:MM). */
 export function formatVrijemePoruke(iso: string): string {
   return new Date(iso).toLocaleTimeString("sr", {
     hour: "2-digit",
@@ -32,7 +30,6 @@ export function formatVrijemePoruke(iso: string): string {
   });
 }
 
-/** Oznaka dana za grupisanje poruka. */
 export function formatDanGrupa(iso: string): string {
   const d = new Date(iso);
   const sada = new Date();
@@ -49,7 +46,6 @@ export function formatDanGrupa(iso: string): string {
   });
 }
 
-/** Ključ dana (YYYY-MM-DD) za grupisanje. */
 export function danKljuc(iso: string): string {
   const d = new Date(iso);
   return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;

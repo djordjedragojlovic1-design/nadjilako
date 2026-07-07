@@ -35,7 +35,6 @@ export default async function NoviRazgovorPage({
     redirect(`/profil/${primalacId}`);
   }
 
-  // Ako razgovor već postoji, preusmjeri na njega (ne pravi duplikat).
   const postojeci = await findPostojeciChat(viewer.id, primalacId, uslugaId);
   if (postojeci) {
     redirect(`/chat/${postojeci}`);

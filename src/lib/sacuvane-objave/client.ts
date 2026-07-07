@@ -12,7 +12,6 @@ export async function sacuvajObjavuClient(
     .insert({ korisnik_id: korisnikId, usluga_id: uslugaId });
 
   if (error) {
-    // 23505 = duplikat (već sačuvano) — tretiramo kao uspjeh
     if (error.code === "23505") return {};
     return { error: error.message };
   }

@@ -57,7 +57,6 @@ export function PratiociControl({
       : await otpratiClient(profilId, viewerId);
 
     if (error) {
-      // Vrati prethodno stanje pri grešci
       setFollowing(!sljedece);
       setCount((c) => Math.max(0, c + (sljedece ? -1 : 1)));
     }

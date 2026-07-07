@@ -58,7 +58,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       ...profiliEntries,
     ];
   } catch {
-    // Ako je baza nedostupna, vraćamo barem statične rute.
   }
 
   return [...staticEntries, ...dynamicEntries];

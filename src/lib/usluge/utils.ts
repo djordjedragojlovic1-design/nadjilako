@@ -26,7 +26,6 @@ export function normalizePromocija(
 ): Promocija {
   const value = promocija ?? tip;
   if (value !== "izdvojeno+" && value !== "izdvojeno") return null;
-  // Istekla promocija gubi oznaku (usluga ostaje aktivna).
   if (promovisanoDo != null && new Date(promovisanoDo) <= new Date()) {
     return null;
   }
@@ -79,7 +78,6 @@ export function formatCijena(
   return tipLabel ? `${amount} ${valutaLabel} ${tipLabel}` : `${amount} ${valutaLabel}`;
 }
 
-/** Cijena svedena na baznu valutu (KM/BAM) radi poređenja i sortiranja. */
 export function cijenaUBAM(
   cijena: number | null,
   valuta: string | null,

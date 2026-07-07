@@ -24,11 +24,6 @@ export type SitemapData = {
   profili: SitemapProfil[];
 };
 
-/**
- * Klijent za javno čitanje podataka za sitemap. Koristi service-role klijent
- * (bez kolačića) kada je dostupan kako bi sitemap mogao da bude keširan;
- * u suprotnom pada nazad na običan serverski klijent.
- */
 async function getReadClient(): Promise<SupabaseClient<Database>> {
   const admin = createAdminClient();
   if (admin) return admin;
@@ -67,7 +62,6 @@ export async function fetchSitemapData(): Promise<SitemapData> {
     .filter((k): k is { slug: string } => Boolean(k.slug))
     .map((k) => ({ slug: k.slug }));
 
-  // Profili korisnika koji imaju bar jednu aktivnu uslugu (vrijedni indeksiranja).
   const profilLastMod = new Map<number, string>();
   for (const u of uslugeRows) {
     const ts = u.updated_at ?? u.created_at ?? new Date().toISOString();

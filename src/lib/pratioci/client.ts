@@ -2,7 +2,6 @@ import { createClient } from "@/lib/supabase/client";
 
 export type PratiociResult = { error?: string };
 
-/** Viewer (pratilacId) zaprati nalog korisnikId. */
 export async function zapratiClient(
   korisnikId: number,
   pratilacId: number,
@@ -17,14 +16,12 @@ export async function zapratiClient(
     .insert({ korisnik_id: korisnikId, pratilac_id: pratilacId });
 
   if (error) {
-    // 23505 = duplikat (već prati) — tretiramo kao uspjeh
     if (error.code === "23505") return {};
     return { error: error.message };
   }
   return {};
 }
 
-/** Viewer (pratilacId) otprati nalog korisnikId. */
 export async function otpratiClient(
   korisnikId: number,
   pratilacId: number,

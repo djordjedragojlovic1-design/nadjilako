@@ -6,10 +6,6 @@ export type KreditRezultat = {
   saldo?: number;
 };
 
-/**
- * Prevod poznatih grešaka iz Postgres funkcija u poruke na srpskom.
- * Funkcije već vraćaju srpski tekst, ali Supabase ponekad doda prefiks.
- */
 function prevodGreske(message: string): string {
   const m = message.toLowerCase();
   if (m.includes("nemate dovoljno kredita")) return "Nemate dovoljno kredita.";
@@ -21,11 +17,9 @@ function prevodGreske(message: string): string {
   if (m.includes("promocija je još aktivna")) {
     return "Promocija je još aktivna. Sačekajte da istekne prije nove promocije.";
   }
-  // Ako funkcija vrati čistu poruku, prikaži je kako jeste.
   return message.replace(/^.*?:\s*/, "") || "Došlo je do greške.";
 }
 
-/** Kupovina paketa kredita (simulirano plaćanje). Vraća novo stanje. */
 export async function kupiKrediteClient(iznos: number): Promise<KreditRezultat> {
   const supabase = createClient();
   const { data, error } = await supabase.rpc("kupi_kredite", { p_iznos: iznos });
@@ -33,7 +27,6 @@ export async function kupiKrediteClient(iznos: number): Promise<KreditRezultat> 
   return { saldo: data as number };
 }
 
-/** Promovisanje usluge (moguće samo kad nema aktivne promocije). Vraća novo stanje kredita. */
 export async function promovisiUsluguClient(
   uslugaId: number,
   tip: PromoTip,

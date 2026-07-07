@@ -9,21 +9,12 @@ export type PozivniBroj = (typeof POZIVNI_BROJEVI)[number];
 
 export const PODRAZUMIJEVANI_POZIVNI = POZIVNI_BROJEVI[0].kod;
 
-/**
- * Spaja pozivni broj države i lokalni dio koji je korisnik unio
- * (npr. "066 123-456") u međunarodni format "+38766123456".
- * Vodeća nula lokalnog broja se uklanja.
- */
 export function sastaviBrojTelefona(kod: string, lokalni: string): string {
   const cifre = lokalni.replace(/\D/g, "").replace(/^0+/, "");
   if (!cifre) return "";
   return `${kod}${cifre}`;
 }
 
-/**
- * Razdvaja sačuvani međunarodni broj (npr. "+38766123456") na
- * pozivni broj države i lokalni dio za prikaz u formi.
- */
 export function razdvojBrojTelefona(puniBroj: string | null): {
   kod: string;
   lokalni: string;

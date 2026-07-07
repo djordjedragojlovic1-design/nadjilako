@@ -63,9 +63,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      // VAŽNO: callback mora ostati sinhron i NE smije da await-uje druge
-      // Supabase pozive — inače dolazi do deadlock-a na auth "lock"-u kada je
-      // otvoreno više tabova (aplikacija zaglavi na "loading").
       const nextUser = session?.user ?? null;
       setUser(nextUser);
       setLoading(false);
@@ -73,7 +70,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setKorisnik(null);
         return;
       }
-      // Učitavanje profila odgađamo izvan callback-a (van lock-a).
       setTimeout(() => {
         void loadProfile(nextUser);
       }, 0);

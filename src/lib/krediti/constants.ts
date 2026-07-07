@@ -8,10 +8,6 @@ export type KreditPaket = {
   popularno?: boolean;
 };
 
-/**
- * Paketi kredita za kupovinu. Iznosi (krediti) MORAJU se poklapati sa
- * dozvoljenim vrijednostima u SQL funkciji `kupi_kredite`.
- */
 export const KREDIT_PAKETI: KreditPaket[] = [
   { krediti: 100, cijenaKM: 10 },
   { krediti: 250, cijenaKM: 22, popularno: true },
@@ -19,20 +15,16 @@ export const KREDIT_PAKETI: KreditPaket[] = [
   { krediti: 1000, cijenaKM: 70 },
 ];
 
-/** Cijena promocije u kreditima (po periodu). Poklapa se sa `promovisi_uslugu`. */
 export const PROMO_CIJENE: Record<PromoTip, number> = {
   izdvojeno: 10,
   "izdvojeno+": 25,
 };
 
-/** Razlika cijene pri ranoj nadogradnji izdvojeno → izdvojeno+ (prvih N dana). */
 export const PROMO_UPGRADE_RAZLIKA =
   PROMO_CIJENE["izdvojeno+"] - PROMO_CIJENE.izdvojeno;
 
-/** Broj dana od početka promocije u kojima važi nadogradnja po razlici. */
 export const PROMO_UPGRADE_RANIH_DANA = 5;
 
-/** Trajanje jedne promocije u danima. */
 export const PROMO_TRAJANJE_DANA = 30;
 
 export const PROMO_LABELS: Record<PromoTip, string> = {

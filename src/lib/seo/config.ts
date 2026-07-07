@@ -3,7 +3,6 @@ import { getSiteOrigin } from "@/lib/auth/site-url";
 
 export const SITE_NAME = "NadjiLako";
 
-/** Produkcijski domen — koristi se kad NEXT_PUBLIC_SITE_URL nije postavljen. */
 export const SITE_URL = getSiteOrigin("https://nadjilako.vercel.app");
 
 export const SITE_TITLE = "NadjiLako — Pronađi uslugu brzo i lako";
@@ -27,13 +26,11 @@ export const SITE_KEYWORDS = [
   "objavi uslugu",
 ];
 
-/** Pravi apsolutni URL od relativne putanje (oslanja se na SITE_URL). */
 export function absoluteUrl(path = "/"): string {
   if (/^https?:\/\//.test(path)) return path;
   return `${SITE_URL}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
-/** Metapodaci koji sprečavaju indeksiranje (za privatne / nalog stranice). */
 export const NOINDEX_ROBOTS: Metadata["robots"] = {
   index: false,
   follow: false,

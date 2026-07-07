@@ -44,7 +44,6 @@ function uslugaKolone(saPromocijom: boolean): string {
   `;
 }
 
-/** Da li je viewer sačuvao datu uslugu. */
 export async function fetchDaLiSacuvano(
   korisnikId: number,
   uslugaId: number,
@@ -61,7 +60,6 @@ export async function fetchDaLiSacuvano(
   return data != null;
 }
 
-/** Sve usluge koje je viewer sačuvao (vidi samo vlasnik — RLS). */
 export async function fetchSacuvaneObjave(
   korisnikId: number,
 ): Promise<UslugaListItem[]> {

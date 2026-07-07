@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { DemoSiteBanner } from "@/components/layout/DemoSiteBanner/DemoSiteBanner";
 import { Footer } from "@/components/layout/Footer/Footer";
 import { Navbar } from "@/components/layout/Navbar/Navbar";
 import { AuthProvider } from "@/components/providers/AuthProvider";
@@ -102,7 +101,6 @@ export default function RootLayout({
           <AuthProvider>
             <div className="flex min-h-screen flex-col">
               <div className="bg-background sticky top-0 z-100">
-                <DemoSiteBanner />
                 <Navbar />
               </div>
               <main className="flex-1 w-full">{children}</main>

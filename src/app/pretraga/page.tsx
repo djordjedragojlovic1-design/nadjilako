@@ -50,8 +50,6 @@ export async function generateMetadata({
       hasPaging,
   );
 
-  // Indeksiramo samo čistu pretragu ili stranicu jedne kategorije;
-  // kombinacije filtera/pretrage ostaju van indeksa (izbjegavamo duplikate).
   const onlyKategorija = Boolean(kategorija) && !hasOtherFilters;
   const indexable = onlyKategorija || (!kategorija && !hasOtherFilters);
 

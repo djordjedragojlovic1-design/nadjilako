@@ -9,7 +9,6 @@ import {
 
 export type PromoAkcijaTip = "nova" | "upgrade" | "blokirano";
 
-/** Rana = razlika (15), puna = cijela cijena izdvojeno+ (25). */
 export type UpgradeVarijanta = "rana" | "puna";
 
 export type PromoPonuda = {
@@ -23,7 +22,6 @@ export type PromoPonuda = {
 
 const MS_PO_DANU = 24 * 60 * 60 * 1000;
 
-/** Aktivna promocija (još nije istekla). */
 export function getAktivnaPromocija(
   promocija: string | null | undefined,
   promovisanoDo: string | null | undefined,
@@ -37,7 +35,6 @@ export function getAktivnaPromocija(
   return null;
 }
 
-/** Da li je još u prozoru za ranu nadogradnju (prvih 5 dana od promovisano_od). */
 export function uRokuZaRanuNadogradnju(
   promovisanoOd: string | null | undefined,
 ): boolean {
@@ -46,7 +43,6 @@ export function uRokuZaRanuNadogradnju(
   return Date.now() - pocetak < PROMO_UPGRADE_RANIH_DANA * MS_PO_DANU;
 }
 
-/** Preostali dani u prozoru ranog upgrade-a (0 ako je prošao). */
 export function preostaloDanaZaRanUpgrade(
   promovisanoOd: string | null | undefined,
 ): number {
@@ -58,7 +54,6 @@ export function preostaloDanaZaRanUpgrade(
   return Math.ceil(preostaloMs / MS_PO_DANU);
 }
 
-/** Određuje tip akcije i cijenu za promociju / nadogradnju. */
 export function getPromoPonuda(
   aktivna: PromoTip | null,
   ciljaniTip: PromoTip,
@@ -104,7 +99,6 @@ export function getPromoPonuda(
   };
 }
 
-/** Datum isteka nakon akcije (prikaz u dijalogu). */
 export function izracunajNovoPromovisanoDo(
   ponuda: PromoPonuda,
   promovisanoDo: string | null,

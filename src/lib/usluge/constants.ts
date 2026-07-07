@@ -48,8 +48,6 @@ export function isSortKey(value: string | null | undefined): value is UslugaSort
   return SORT_OPCIJE.some((o) => o.value === value);
 }
 
-// Fiksni kursevi za interno poređenje cijena (svedeno na KM / BAM).
-// KM je vezana za EUR (1 € = 1.95583 KM). RSD je približan i mijenja se vremenom.
 export const KURS_U_BAM: Record<string, number> = {
   BAM: 1,
   EUR: 1.95583,
@@ -69,7 +67,6 @@ export const VALUTA_OPTIONS = ["BAM", "EUR", "RSD"] as const;
 
 export const USLUGE_SLIKE_BUCKET = "usluge-slike";
 export const SLIKE_MAX_COUNT = 5;
-// Ciljana maksimalna veličina slike nakon kompresije (~200 KB) radi uštede memorije.
 export const SLIKA_TARGET_MAX_BYTES = 200 * 1024;
 export const SLIKA_ALLOWED_TYPES = [
   "image/jpeg",

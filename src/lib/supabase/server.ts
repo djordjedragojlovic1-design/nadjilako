@@ -19,7 +19,6 @@ export async function createClient() {
               cookieStore.set(name, value, options);
             });
           } catch {
-            // Pozivi iz Server Componenta ne mogu postaviti kolačiće — middleware to rešava.
           }
         },
       },
